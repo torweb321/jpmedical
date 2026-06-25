@@ -198,6 +198,38 @@ function initOrderForm() {
   var span = document.getElementById('orderIdSpan');
   if (!span) return;
   span.textContent = genOrderId();
+
+  var PKG_MAP = {
+    '辻仲 初筛版': ['辻仲 基础套餐', '230,000'],
+    '辻仲 消化道专项': ['辻仲 内窥镜套餐', '270,000'],
+    '辻仲 标准版': ['辻仲 男性/女性综合套餐', '570,000~620,000'],
+    '圣路加 标准版': ['套餐A', '429,000'],
+    '圣路加 心血管加强版': ['套餐B', '572,000'],
+    '圣路加 脑心速查版': ['套餐C', '297,000'],
+    '圣路加 PET-CT专项版': ['套餐D', '330,000'],
+    '癌研 标准版': ['基本套餐（男女）', '363,000'],
+    '癌研 女性标准版': ['基本套餐（仅限女性）', '528,000'],
+    '癌研 住院深度版': ['住院套餐', '781,000~869,000'],
+    '庆应 初筛版': ['基础套餐（无胃镜）', '495,000'],
+    '庆应 标准版': ['基础套餐（含胃镜）', '561,000'],
+    '藤田 高端版': ['1日套餐', '924,000~1,144,000'],
+    '藤田 深度版': ['2日套餐', '1,100,000~1,309,000'],
+    '东科大 牙科专项': ['牙科精密检查', '352,000'],
+    '视频二诊': ['第二诊疗意见', '450,000~660,000']
+  };
+
+  document.getElementById('ordOurPkg').addEventListener('change', function() {
+    var val = this.value;
+    var data = PKG_MAP[val];
+    if (data) {
+      document.getElementById('ordUpstream').value = data[0];
+      document.getElementById('ordPrice').value = data[1];
+    } else {
+      document.getElementById('ordUpstream').value = '';
+      document.getElementById('ordPrice').value = '';
+    }
+  });
+
   document.getElementById('orderForm')?.addEventListener('submit', function(e) {
     e.preventDefault();
     var name = document.getElementById('ordName').value.trim();
@@ -640,9 +672,9 @@ function orderForm() { return `
     </select>
   </div>
 
-  <div class="form-group" style="margin-top:14px;"><label>上游原名 *</label><input type="text" id="ordUpstream" placeholder="对照上游命名表填写" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
+  <div class="form-group" style="margin-top:14px;"><label>上游原名</label><input type="text" id="ordUpstream" readonly style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;background:#f5f5f5;color:#666;"></div>
 
-  <div class="form-group" style="margin-top:14px;"><label>价格（日元）</label><input type="text" id="ordPrice" placeholder="例: 429,000" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
+  <div class="form-group" style="margin-top:14px;"><label>价格（日元）</label><input type="text" id="ordPrice" readonly style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;background:#f5f5f5;color:#666;font-weight:700;"></div>
 
   <div class="form-group" style="margin-top:14px;"><label>预计赴日日期</label><input type="date" id="ordDate" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
 

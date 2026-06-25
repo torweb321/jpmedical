@@ -262,6 +262,18 @@ footer .footer-bottom { border-top: 1px solid rgba(255,255,255,.1); padding-top:
     <strong>我们的推荐逻辑：</strong> 综合考虑医院品牌知名度、套餐性价比、检查全面性、时间成本和客户反馈。这三款覆盖了"入门体验—主流全面—高端专项"三个层级。
   </div>
   <p style="font-size:12px;color:#999;margin:-8px 0 14px 0;text-align:center;">※ 以上价格为体检服务费，不含餐饮、机票、住宿等费用</p>
+  <div style="text-align:center;margin-bottom:20px;">
+    <span style="font-size:13px;color:#666;cursor:pointer;border-bottom:1px dashed #ccc;" onclick="toggleRate()">💱 汇率换算工具</span>
+    <div id="rateTool" style="display:none;margin:10px auto;max-width:340px;background:var(--white);border-radius:8px;box-shadow:var(--shadow);padding:14px 18px;text-align:left;">
+      <label style="font-size:13px;font-weight:600;color:var(--primary);">日元 → 人民币</label>
+      <div style="display:flex;gap:8px;margin-top:6px;">
+        <input type="number" id="jpyInput" placeholder="输入日元金额" value="100000" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;" oninput="convertRate()">
+        <span style="line-height:38px;">→</span>
+        <span id="cnyOutput" style="flex:1;padding:8px 12px;background:var(--bg);border-radius:6px;font-size:14px;font-weight:700;color:var(--primary);">≈ ¥4,800</span>
+      </div>
+      <p style="font-size:11px;color:#999;margin-top:4px;">参考汇率：1日元 ≈ 0.048人民币（实时汇率以银行牌价为准）</p>
+    </div>
+  </div>
   <div class="packages-highlight">
     <div class="package-card fade-in">
       <div class="package-badge entry">入门首选</div>
@@ -880,6 +892,15 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
 });
 
 // Wechat QR modal
+function toggleRate() {
+  var el = document.getElementById('rateTool');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  if (el.style.display === 'block') convertRate();
+}
+function convertRate() {
+  var v = parseFloat(document.getElementById('jpyInput').value) || 0;
+  document.getElementById('cnyOutput').textContent = '≈ ¥' + Math.round(v * 0.048);
+}
 document.getElementById('wechatBtn').addEventListener('click', function() {
   document.getElementById('qrOverlay').classList.add('show');
 });
