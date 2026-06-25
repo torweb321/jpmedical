@@ -189,6 +189,35 @@ window.addEventListener('DOMContentLoaded', () => {
 const TG_BOT_TOKEN = '8977663630:AAFjtrA-og7IAEJmDu5Lq187Ntu-ZGF28D4';
 const TG_CHAT_ID = '7561488528';
 
+function genOrderId() {
+  var d = new Date();
+  return 'ORD-' + d.getFullYear() + ('0'+(d.getMonth()+1)).slice(-2) + ('0'+d.getDate()).slice(-2) + '-' + Math.floor(1000 + Math.random()*9000);
+}
+
+function initOrderForm() {
+  var span = document.getElementById('orderIdSpan');
+  if (!span) return;
+  span.textContent = genOrderId();
+  document.getElementById('orderForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var name = document.getElementById('ordName').value.trim();
+    var phone = document.getElementById('ordPhone').value.trim();
+    if (!name || !phone) { var r = document.getElementById('orderResult'); r.style.display = 'block'; r.style.color = 'red'; r.textContent = '请填写客户姓名和电话'; return; }
+    var wechat = document.getElementById('ordWechat').value.trim();
+    var ourPkg = document.getElementById('ordOurPkg').value;
+    var upstream = document.getElementById('ordUpstream').value.trim();
+    var price = document.getElementById('ordPrice').value.trim();
+    var date = document.getElementById('ordDate').value;
+    var note = document.getElementById('ordNote').value.trim();
+    var oid = document.getElementById('orderIdSpan').textContent;
+    var msg = '📦 新订单确认\n订单号: ' + oid + '\n姓名: ' + name + '\n电话: ' + phone + (wechat ? '\n微信: ' + wechat : '') + '\n我方套餐: ' + (ourPkg || '未选') + '\n上游原名: ' + (upstream || '未填') + '\n价格: ' + (price || '未填') + '日元\n赴日日期: ' + (date || '未定') + '\n备注: ' + (note || '无');
+    if (TG_BOT_TOKEN) { fetch('https://api.telegram.org/bot' + TG_BOT_TOKEN + '/sendMessage', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg }) }).catch(function(){}); }
+    var r2 = document.getElementById('orderResult'); r2.style.display = 'block'; r2.style.color = 'green'; r2.textContent = '✅ 已提交！订单号：' + oid;
+    this.reset();
+    document.getElementById('orderIdSpan').textContent = genOrderId();
+  });
+}
+
 window.showSection = function(id) {
   document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
   document.querySelector(`.sidebar a[data-section="${id}"]`)?.classList.add('active');
@@ -196,6 +225,7 @@ window.showSection = function(id) {
   if (!section) return;
   const area = document.getElementById('contentArea');
   area.innerHTML = typeof section.fn === 'function' ? section.fn() : section.fn;
+  if (id === 'order') { setTimeout(initOrderForm, 50); }
   area.querySelectorAll('.collapse-toggle').forEach(el => {
     el.addEventListener('click', () => {
       el.classList.toggle('open');
@@ -623,57 +653,6 @@ function orderForm() { return `
 
 <div id="orderResult" style="margin-top:12px;font-size:14px;display:none;"></div>
 
-<script>
-function genOrderId() {
-  var d = new Date();
-  var y = d.getFullYear();
-  var m = ('0'+(d.getMonth()+1)).slice(-2);
-  var day = ('0'+d.getDate()).slice(-2);
-  var r = Math.floor(1000 + Math.random()*9000);
-  return 'ORD-'+y+m+day+'-'+r;
-}
-var currentOrderId = genOrderId();
-document.getElementById('orderIdSpan').textContent = currentOrderId;
-
-document.getElementById('orderForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const name = document.getElementById('ordName').value.trim();
-  const phone = document.getElementById('ordPhone').value.trim();
-  if (!name || !phone) { document.getElementById('orderResult').style.display = 'block'; document.getElementById('orderResult').style.color = 'red'; document.getElementById('orderResult').textContent = '请填写客户姓名和电话'; return; }
-  const wechat = document.getElementById('ordWechat').value.trim();
-  const ourPkg = document.getElementById('ordOurPkg').value;
-  const upstream = document.getElementById('ordUpstream').value.trim();
-  const price = document.getElementById('ordPrice').value.trim();
-  const date = document.getElementById('ordDate').value;
-  const note = document.getElementById('ordNote').value.trim();
-
-  const msg = '📦 新订单确认\n' +
-    '订单号: ' + currentOrderId + '\n' +
-    '姓名: ' + name + '\n' +
-    '电话: ' + phone + (wechat ? '\n微信: ' + wechat : '') + '\n' +
-    '我方套餐: ' + (ourPkg || '未选') + '\n' +
-    '上游原名: ' + (upstream || '未填') + '\n' +
-    '价格: ' + (price || '未填') + '日元\n' +
-    '赴日日期: ' + (date || '未定') + '\n' +
-    '备注: ' + (note || '无');
-
-  if (TG_BOT_TOKEN) {
-    fetch('https://api.telegram.org/bot' + TG_BOT_TOKEN + '/sendMessage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg })
-    }).catch(function(){});
-  }
-
-  document.getElementById('orderResult').style.display = 'block';
-  document.getElementById('orderResult').style.color = 'green';
-  document.getElementById('orderResult').textContent = '✅ 订单已提交至你的Telegram！订单号：' + currentOrderId;
-  this.reset();
-  // 下次再填生成新订单号
-  currentOrderId = genOrderId();
-  document.getElementById('orderIdSpan').textContent = currentOrderId;
-});
-</script>
 `; }
 
 function processContent() { return `
