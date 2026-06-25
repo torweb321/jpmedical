@@ -169,6 +169,7 @@ window.addEventListener('DOMContentLoaded', () => {
     { id:'scripts', label:'销售话术', fn: salesScripts },
     { id:'faq', label:'常见问题', fn: faqContent },
     { id:'objections', label:'异议处理', fn: objectionContent },
+    { id:'order', label:'📝 下单确认', fn: orderForm },
     { id:'process', label:'成交流程', fn: processContent },
     { id:'contact', label:'📞 联系方式', fn: contactInfo }
   ];
@@ -183,6 +184,10 @@ window.addEventListener('DOMContentLoaded', () => {
   updateClock();
   setInterval(updateClock, 60000);
 });
+
+// Telegram Bot 配置
+const TG_BOT_TOKEN = '8977663630:AAFjtrA-og7IAEJmDu5Lq187Ntu-ZGF28D4';
+const TG_CHAT_ID = '7561488528';
 
 window.showSection = function(id) {
   document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
@@ -576,6 +581,79 @@ function objectionContent() { return `
 
 <h4>"远程二诊看得准吗？"</h4>
 <p>"视频前专家已研究过全部病历和影像资料，视频直接给结论。不是普通问诊。"</p>
+`; }
+
+function orderForm() { return `
+<h3>📝 下单确认</h3>
+<p style="font-size:13px;color:#999;margin-bottom:16px;">客户确认意向后，填写此表提交至你的 Telegram。收到后转发给上游（EAJ）下单。</p>
+
+<form id="orderForm" style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;max-width:600px;">
+  <div class="form-group"><label>客户姓名 *</label><input type="text" id="ordName" required style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
+  <div class="form-group" style="margin-top:14px;"><label>联系电话 *</label><input type="tel" id="ordPhone" required style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
+  <div class="form-group" style="margin-top:14px;"><label>微信（选填）</label><input type="text" id="ordWechat" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
+
+  <div class="form-group" style="margin-top:14px;"><label>我方套餐名 *</label>
+    <select id="ordOurPkg" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+      <option value="">请选择</option>
+      <option>辻仲 初筛版</option><option>辻仲 消化道专项</option><option>辻仲 标准版</option>
+      <option>圣路加 标准版</option><option>圣路加 心血管加强版</option><option>圣路加 脑心速查版</option><option>圣路加 PET-CT专项版</option>
+      <option>癌研 标准版</option><option>癌研 女性标准版</option><option>癌研 住院深度版</option>
+      <option>庆应 初筛版</option><option>庆应 标准版</option>
+      <option>藤田 高端版</option><option>藤田 深度版</option>
+      <option>东科大 牙科专项</option>
+      <option>视频二诊</option>
+    </select>
+  </div>
+
+  <div class="form-group" style="margin-top:14px;"><label>上游原名 *</label><input type="text" id="ordUpstream" placeholder="对照上游命名表填写" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
+
+  <div class="form-group" style="margin-top:14px;"><label>价格（日元）</label><input type="text" id="ordPrice" placeholder="例: 429,000" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
+
+  <div class="form-group" style="margin-top:14px;"><label>预计赴日日期</label><input type="date" id="ordDate" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
+
+  <div class="form-group" style="margin-top:14px;"><label>备注</label><textarea id="ordNote" rows="3" placeholder="翻译陪同需求 / 住宿安排 / 特殊要求等" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></textarea></div>
+
+  <button type="submit" style="margin-top:18px;width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;">📤 提交订单 →</button>
+</form>
+
+<div id="orderResult" style="margin-top:12px;font-size:14px;display:none;"></div>
+
+<script>
+document.getElementById('orderForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const name = document.getElementById('ordName').value.trim();
+  const phone = document.getElementById('ordPhone').value.trim();
+  if (!name || !phone) { document.getElementById('orderResult').style.display = 'block'; document.getElementById('orderResult').style.color = 'red'; document.getElementById('orderResult').textContent = '请填写客户姓名和电话'; return; }
+  const wechat = document.getElementById('ordWechat').value.trim();
+  const ourPkg = document.getElementById('ordOurPkg').value;
+  const upstream = document.getElementById('ordUpstream').value.trim();
+  const price = document.getElementById('ordPrice').value.trim();
+  const date = document.getElementById('ordDate').value;
+  const note = document.getElementById('ordNote').value.trim();
+
+  const msg = \`📦 新订单确认
+姓名: \${name}
+电话: \${phone}\${wechat ? '\\n微信: ' + wechat : ''}
+我方套餐: \${ourPkg || '未选'}
+上游原名: \${upstream || '未填'}
+价格: \${price || '未填'}日元
+赴日日期: \${date || '未定'}
+备注: \${note || '无'}\`;
+
+  if (TG_BOT_TOKEN) {
+    fetch('https://api.telegram.org/bot' + TG_BOT_TOKEN + '/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg })
+    }).catch(function(){});
+  }
+
+  document.getElementById('orderResult').style.display = 'block';
+  document.getElementById('orderResult').style.color = 'green';
+  document.getElementById('orderResult').textContent = '✅ 订单已提交至你的Telegram！';
+  this.reset();
+});
+</script>
 `; }
 
 function processContent() { return `
