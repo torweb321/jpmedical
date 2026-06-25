@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>为什么日本医院不接待个人预约 — 启航医疗</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --primary: #0a2a5c; --primary-light: #1a4a8a; --gold: #c9a84c; --gold-light: #e8d5a0; --bg: #f5f7fa; --white: #fff; --text: #333; --text-light: #666; --radius: 12px; --shadow: 0 4px 20px rgba(0,0,0,.08); }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; color: var(--text); line-height: 1.7; background: var(--bg); }
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(255,255,255,.95); backdrop-filter: blur(20px); box-shadow: 0 1px 10px rgba(0,0,0,.06); }
+.nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+.nav-logo { font-size: 20px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+.nav-logo small { font-weight: 400; font-size: 13px; color: var(--text-light); }
+.nav-links { display: flex; gap: 28px; list-style: none; }
+.nav-links a { text-decoration: none; color: var(--text); font-size: 14px; font-weight: 500; transition: color .2s; }
+.nav-links a:hover { color: var(--gold); }
+.nav-links a.active { color: var(--gold); }
+.nav-cta { background: var(--primary); color: var(--white) !important; padding: 8px 20px; border-radius: 6px; }
+.hero { margin-top: 64px; background: linear-gradient(135deg, var(--primary) 0%, #0d3b6e 50%, #1a5a9a 100%); color: white; padding: 100px 24px 80px; text-align: center; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; top: -50%; right: -20%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(201,168,76,.1) 0%, transparent 70%); border-radius: 50%; }
+.hero-inner { max-width: 800px; margin: 0 auto; position: relative; }
+.hero h1 { font-size: clamp(28px, 4vw, 44px); font-weight: 800; line-height: 1.3; margin-bottom: 16px; }
+.hero p { font-size: 16px; opacity: .85; max-width: 600px; margin: 0 auto 24px; }
+.section { max-width: 1000px; margin: 0 auto; padding: 80px 24px; }
+.section-title { text-align: center; margin-bottom: 48px; }
+.section-title h2 { font-size: clamp(24px, 3vw, 32px); color: var(--primary); }
+.section-title h2 span { color: var(--gold); }
+.section-title p { color: var(--text-light); margin-top: 8px; font-size: 15px; }
+.card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 40px; margin-bottom: 32px; }
+.card h3 { font-size: 22px; color: var(--primary); margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+.card h3 .num { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: var(--gold); color: white; border-radius: 50%; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+.card p { font-size: 15px; color: var(--text); margin-bottom: 12px; line-height: 1.8; }
+.card ul { margin: 12px 0; padding-left: 20px; }
+.card li { font-size: 15px; margin-bottom: 8px; line-height: 1.6; }
+.quote { background: #f8f6f0; border-left: 4px solid var(--gold); padding: 20px 24px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 14px; color: #555; }
+.quote strong { color: var(--primary); }
+.highlight-box { background: linear-gradient(135deg, rgba(201,168,76,.08), rgba(10,42,92,.05)); border: 1px solid var(--gold-light); border-radius: var(--radius); padding: 32px; margin: 24px 0; }
+.highlight-box h4 { color: var(--gold); font-size: 18px; margin-bottom: 8px; }
+.highlight-box p { font-size: 14px; color: var(--text); }
+.btn { display: inline-block; padding: 14px 36px; border-radius: 8px; font-size: 16px; font-weight: 600; text-decoration: none; transition: all .3s; cursor: pointer; border: none; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); }
+.btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,.5); }
+.btn-outline:hover { border-color: white; }
+footer { background: var(--primary); color: rgba(255,255,255,.7); padding: 48px 24px 24px; text-align: center; }
+.footer-inner { max-width: 800px; margin: 0 auto; }
+.footer-inner h4 { color: white; font-size: 18px; margin-bottom: 16px; }
+.footer-contact { display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; margin-bottom: 24px; font-size: 14px; text-align: left; }
+.footer-contact strong { color: white; }
+.footer-bottom { font-size: 12px; opacity: .5; border-top: 1px solid rgba(255,255,255,.1); padding-top: 16px; }
+.footer-bottom a { color: rgba(255,255,255,.3); text-decoration: none; }
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .card { padding: 24px; }
+  .footer-contact { flex-direction: column; gap: 24px; text-align: center; }
+}
+.timeline { position: relative; padding-left: 24px; margin: 16px 0; }
+.timeline::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px; background: var(--gold-light); }
+.timeline-item { position: relative; padding: 0 0 20px 20px; font-size: 14px; }
+.timeline-item::before { content: ''; position: absolute; left: -5px; top: 6px; width: 12px; height: 12px; background: var(--gold); border-radius: 50%; }
+.timeline-item strong { color: var(--primary); }
+.tag { display: inline-block; background: rgba(201,168,76,.15); color: var(--gold); padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-right: 4px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">日本精密体检 <small>启航医疗</small></div>
+    <ul class="nav-links">
+      <li><a href="index.html">首页</a></li>
+      <li><a href="index.html#packages">体检套餐</a></li>
+      <li><a href="index.html#second-opinion">视频二诊</a></li>
+      <li><a href="why-us.html" class="active">为什么需要中介</a></li>
+      <li><a href="index.html#contact" class="nav-cta">立即咨询</a></li>
+    </ul>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge" style="display:inline-block;background:rgba(201,168,76,.2);border:1px solid var(--gold);color:var(--gold);padding:4px 16px;border-radius:20px;font-size:13px;margin-bottom:24px;">🏛 日本医疗制度科普</div>
+    <h1>为什么日本顶级医院<br>不接待个人预约？</h1>
+    <p>不是医院高冷，也不是非要"中介"赚差价——这是日本法律规定的制度刚性。看完你就明白，为什么所有赴日医疗都必须走正规机构。</p>
+    <div class="hero-btns" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <a href="#law" class="btn btn-primary">了解制度规定</a>
+      <a href="index.html#contact" class="btn btn-outline">免费咨询</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="law">
+  <div class="section-title">
+    <h2>四层制度壁垒<span class="gold">，一层一层拆解</span></h2>
+    <p>为什么你不能自己联系日本医院？不是因为"中介垄断"，而是日本法律和医院规则共同决定的</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">1</span> 日本法律规定：医疗签证必须由"身元担保机构"担保</h3>
+    <p>根据日本外务省规定，外国人赴日接受医疗（包括体检），申请<strong>医疗居留签证</strong>必须提交<strong>「身元保证书」</strong>。这份保证书只有经外务省登录的「身元担保机构」才能开具。个人无法自行申请。</p>
+    <div class="quote">
+      <strong>🔗 外务省官方说明：</strong><br>
+      "希望赴日接受医疗的外国人，需要通过「身元担保机构」申请医疗签证。身元担保机构负责患者的身份验证、费用保证、治疗协调和在留管理。"<br>
+      <a href="https://www.mofa.go.jp/jinfo/visit/visa/medical.html" target="_blank" rel="noopener" style="color:var(--primary);font-size:13px;">→ 日本外务省医疗签证页面</a>
+    </div>
+    <p>身元担保机构的责任包括：</p>
+    <ul>
+      <li>确认患者的身份和就诊目的</li>
+      <li>向医院担保医疗费用的支付</li>
+      <li>对患者在日期间的居留管理负责</li>
+      <li>患者逾期不离境时，身元担保机构需配合处理</li>
+    </ul>
+    <p style="font-size:13px;color:var(--text-light);margin-top:8px;">所以不是"中介想赚差价"，而是法律要求必须经过登录机构。</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">2</span> 医院自身规定：不接收个人直接预约</h3>
+    <p>这不是中介编造的，是日本各大医院官网白纸黑字写明的规定。随便举几个例子：</p>
+
+    <div class="quote">
+      <strong>🏥 顺天堂大学医院（日本排名前列的综合医院）</strong><br>
+      "本院原则上不受理来自海外的直接预约。请通过日本国内正规的医疗协调机构进行申请。"<br>
+      <span style="font-size:12px;color:#999;">来源：顺天堂医院官网 国际诊疗部</span>
+    </div>
+
+    <div class="quote">
+      <strong>🏥 东京中城医疗中心（圣路加旗下高端体检中心）</strong><br>
+      "国际患者请通过本公司指定的事务代理机构预约。"<br>
+      <span style="font-size:12px;color:#999;">来源：东京中城医疗中心官网</span>
+    </div>
+
+    <div class="quote">
+      <strong>🏥 虎之门医院（日本特定功能医院）</strong><br>
+      "外国患者的接收需要通过本院的合作机构。"<br>
+      <span style="font-size:12px;color:#999;">来源：虎之门医院 国际医疗部</span>
+    </div>
+
+    <p>为什么医院要这样做？</p>
+    <ul>
+      <li><strong>语言障碍：</strong>医院没有常设国际部和多语种工作人员</li>
+      <li><strong>病历翻译：</strong>病历必须由专业医学翻译译成日文，医院不负责审核非专业翻译</li>
+      <li><strong>付款保障：</strong>通过机构担保，医院省去国际催款的麻烦</li>
+      <li><strong>无缝衔接：</strong>机构负责接送、住宿、翻译、随访，医院只需专注诊疗</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">3</span> 病历翻译：不是"会日语就能翻"</h3>
+    <p>很多客户问："我找日本朋友帮我翻译病历不行吗？" 答案是真不行——医院不认可个人翻译。</p>
+    <ul>
+      <li><strong>术语要求：</strong>医学翻译需要专业术语体系，一个词译错可能导致误诊</li>
+      <li><strong>格式要求：</strong>日本医院对病历格式有固定要求，个人翻译不知道模板</li>
+      <li><strong>责任认定：</strong>翻译错误导致的医疗事故，个人翻译无法承担责任</li>
+      <li><strong>医院信任：</strong>医院只承认身元担保机构提交的翻译件，因为机构对翻译质量负责</li>
+    </ul>
+    <div class="quote">
+      <strong>💡 真实案例：</strong><br>
+      某客户自己找人翻译了病历提交给日本医院，医院发现"病理诊断"（Pathological Diagnosis）被错译成"病历诊断"退回要求重译，预约延期一个月。专业医学翻译不是普通日语翻译能替代的。
+    </div>
+    <p>我们的医学翻译团队持有JTF（日本翻译协会）认证，平均5年以上医疗翻译经验，每月处理50+份中日病历翻译。</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">4</span> 我们是谁：外务省登录 · 2003年成立 · 50+医院官方合作</h3>
+
+    <div class="highlight-box">
+      <h4>✅ 我们是正规的，不是"野中介"</h4>
+      <p>我们与<strong>威马捷救援株式会社（EAJ）</strong>建立官方合作关系。EAJ成立于2003年，是日本首家获批的「医疗居留签证身元担保机构」，东京证券交易所上市企业。与50+日本顶级医院建立官方合作通道，包括国立癌症研究中心、东京大学医院、圣路加国际医院、庆应义塾大学医院等。</p>
+    </div>
+
+    <p><strong>通过我们预约和您自己预约的区别：</strong></p>
+    <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;">
+      <tr style="background:var(--primary);color:white;"><th style="padding:10px;text-align:left;">对比项</th><th style="padding:10px;text-align:left;">个人直接尝试</th><th style="padding:10px;text-align:left;">通过正规机构</th></tr>
+      <tr style="border-bottom:1px solid #eee;"><td style="padding:10px;">能否预约</td><td style="padding:10px;color:red;">❌ 几乎全部拒绝</td><td style="padding:10px;color:green;">✅ 官方合作通道</td></tr>
+      <tr style="border-bottom:1px solid #eee;"><td style="padding:10px;">医疗签证</td><td style="padding:10px;color:red;">❌ 无法获得身元保证书</td><td style="padding:10px;color:green;">✅ 全程代办</td></tr>
+      <tr style="border-bottom:1px solid #eee;"><td style="padding:10px;">病历翻译</td><td style="padding:10px;color:red;">❌ 医院不认可个人翻译</td><td style="padding:10px;color:green;">✅ 专业医学翻译+医院认可</td></tr>
+      <tr style="border-bottom:1px solid #eee;"><td style="padding:10px;">医院选择</td><td style="padding:10px;color:orange;">⚠️ 基本等于零</td><td style="padding:10px;color:green;">✅ 50+医院可选</td></tr>
+      <tr style="border-bottom:1px solid #eee;"><td style="padding:10px;">现场翻译</td><td style="padding:10px;color:orange;">⚠️ 自行解决</td><td style="padding:10px;color:green;">✅ 全程中文陪同</td></tr>
+      <tr><td style="padding:10px;">售后保障</td><td style="padding:10px;color:red;">❌ 无</td><td style="padding:10px;color:green;">✅ 报告翻译寄送+随访</td></tr>
+    </table>
+  </div>
+</section>
+
+<section style="background:var(--white);padding:60px 24px;text-align:center;">
+  <div style="max-width:700px;margin:0 auto;">
+    <h3 style="font-size:24px;color:var(--primary);margin-bottom:12px;">所以，你不是在"多花钱找中介"</h3>
+    <p style="font-size:15px;color:var(--text-light);margin-bottom:24px;">你是在通过日本法律认可的唯一合规渠道，对接日本顶级医疗资源。<br>没有我们，你自己根本约不到这些医院。</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <a href="index.html" class="btn btn-primary">返回首页查看套餐</a>
+      <a href="index.html#contact" class="btn btn-primary" style="background:var(--gold);">免费咨询</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <h4>启航医疗 · 日本高端精密体检预约中心</h4>
+    <div class="footer-contact">
+      <div><strong>联系我们</strong><br>📧 EMAIL: qihangmedical@outlook.com<br>💬 微信：扫描二维码添加<br>🌐 WhatsApp: 点击右下角图标联系</div>
+      <div><strong>服务时间</strong><br>周一至周五 9:00 - 18:00<br>周六 10:00 - 16:00<br>24小时内回复所有咨询</div>
+    </div>
+    <div class="footer-bottom">© 2026 启航医疗 Qihang Medical. All Rights Reserved. | <a href="agent.html">内部</a></div>
+  </div>
+</footer>
+
+</body>
+</html>
