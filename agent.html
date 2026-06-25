@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>启航医疗 · 销售助手</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --primary: #0a2a5c; --gold: #c9a84c; --bg: #f5f7fa; --white: #fff; --text: #333; --text-light: #666; --radius: 10px; --shadow: 0 2px 12px rgba(0,0,0,.08); }
+body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; color: var(--text); line-height: 1.6; background: var(--bg); }
+
+/* Password gate */
+.password-gate { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 24px; }
+.password-box { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,.1); max-width: 400px; width: 100%; text-align: center; }
+.password-box h1 { font-size: 22px; color: var(--primary); margin-bottom: 8px; }
+.password-box p { font-size: 14px; color: var(--text-light); margin-bottom: 24px; }
+.password-box input { width: 100%; padding: 12px 16px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; text-align: center; margin-bottom: 16px; }
+.password-box input:focus { border-color: var(--gold); outline: none; }
+.password-box .error { color: #e74c3c; font-size: 13px; margin-bottom: 12px; display: none; }
+.password-box button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: 600; }
+.password-box button:hover { background: #1a4a8a; }
+
+#app { display: none; }
+
+/* Nav */
+.agent-nav { background: var(--primary); color: white; padding: 0 16px; position: sticky; top: 0; z-index: 100; }
+.agent-nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 52px; }
+.agent-nav h2 { font-size: 16px; }
+.agent-nav h2 span { color: var(--gold); font-weight: 400; }
+.agent-nav .nav-right { display: flex; gap: 12px; align-items: center; }
+.agent-nav .nav-right span { font-size: 12px; opacity: .7; }
+.agent-nav a { color: rgba(255,255,255,.7); text-decoration: none; font-size: 13px; }
+.agent-nav a:hover { color: white; }
+
+/* Layout */
+.agent-body { display: flex; max-width: 1200px; margin: 0 auto; min-height: calc(100vh - 52px); }
+
+/* Sidebar */
+.sidebar { width: 200px; flex-shrink: 0; background: white; border-right: 1px solid #eee; padding: 16px 0; position: sticky; top: 52px; height: calc(100vh - 52px); overflow-y: auto; }
+.sidebar a { display: block; padding: 8px 20px; font-size: 13px; color: var(--text); text-decoration: none; border-left: 3px solid transparent; }
+.sidebar a:hover { background: var(--bg); }
+.sidebar a.active { border-left-color: var(--gold); background: rgba(201,168,76,.08); color: var(--primary); font-weight: 600; }
+.sidebar .section-label { font-size: 11px; text-transform: uppercase; color: #999; padding: 12px 20px 4px; font-weight: 600; letter-spacing: .5px; }
+
+/* Content */
+.content { flex: 1; padding: 24px 32px; overflow-y: auto; max-width: 800px; }
+.content h3 { font-size: 20px; color: var(--primary); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--gold); }
+.content h4 { font-size: 15px; color: var(--primary); margin: 20px 0 8px; }
+.content p, .content li { font-size: 14px; color: var(--text); margin-bottom: 8px; }
+.content ul, .content ol { padding-left: 20px; margin-bottom: 12px; }
+.content .highlight { background: #fffde7; padding: 12px 16px; border-radius: 8px; border-left: 3px solid var(--gold); margin: 12px 0; font-size: 14px; }
+
+/* Cards */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 12px 0; }
+.info-card { background: var(--bg); padding: 16px; border-radius: 8px; }
+.info-card .label { font-size: 11px; color: #999; text-transform: uppercase; }
+.info-card .value { font-size: 16px; font-weight: 700; color: var(--primary); margin-top: 2px; }
+.info-card .value small { font-size: 13px; font-weight: 400; color: var(--text-light); }
+
+/* Tables */
+.agent-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
+.agent-table th { background: var(--primary); color: white; padding: 8px 12px; text-align: left; font-weight: 600; }
+.agent-table td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+.agent-table tr:hover td { background: #f8f9fc; }
+.agent-table .price { font-weight: 700; color: var(--primary); white-space: nowrap; }
+
+/* Quick reference */
+.quick-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px 16px; background: white; border-radius: 8px; box-shadow: var(--shadow); align-items: center; }
+.quick-bar input { flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+.quick-bar .badge { font-size: 12px; padding: 4px 10px; border-radius: 4px; background: var(--bg); color: var(--text-light); }
+.quick-bar .badge.gold { background: rgba(201,168,76,.15); color: #9a7e2c; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .content { padding: 16px; }
+  .card-grid { grid-template-columns: 1fr; }
+}
+
+.hidden { display: none; }
+.tab-content { padding-top: 8px; }
+
+/* Collapse */
+.collapse-toggle { cursor: pointer; user-select: none; }
+.collapse-toggle::before { content: '▶ '; font-size: 10px; color: var(--gold); }
+.collapse-toggle.open::before { content: '▼ '; }
+.collapse-body { display: none; margin: 8px 0 8px 16px; }
+.collapse-body.open { display: block; }
+</style>
+</head>
+<body>
+
+<div class="password-gate" id="passwordGate">
+  <div class="password-box">
+    <h1>🔒 销售助手</h1>
+    <p>内部资料，请输入密码</p>
+    <input type="password" id="passwordInput" placeholder="请输入密码" onkeydown="if(event.key==='Enter')checkPassword()">
+    <div class="error" id="passwordError">密码错误</div>
+    <button onclick="checkPassword()">进入</button>
+  </div>
+</div>
+
+<div id="app">
+
+<nav class="agent-nav">
+  <div class="agent-nav-inner">
+    <h2>启航医疗 <span>销售助手</span></h2>
+    <div class="nav-right">
+      <span id="clockDisplay"></span>
+      <a href="index.html" target="_blank">官网</a>
+      <a href="#" onclick="logout()" style="color:rgba(255,255,255,.5);">退出</a>
+    </div>
+  </div>
+</nav>
+
+<div class="agent-body">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <main class="content" id="mainContent">
+    <div class="quick-bar">
+      <input type="text" id="searchInput" placeholder="搜索产品、话术、价格..." oninput="searchContent()">
+      <span class="badge gold">📌 圣路加A 429,000日元</span>
+      <span class="badge">🏆 主推</span>
+    </div>
+    <div id="contentArea"></div>
+  </main>
+</div>
+
+</div>
+
+<script>
+// ===== CONFIG =====
+const PASSWORD_HASH = 'qihang2026'; // 明文密码，后续可改
+// =================
+
+const sections = [
+  { id:'quick', label:'⚡ 速查', content: quickRef },
+  { id:'products', label:'产品总览', content: productOverview },
+  { id:'matrix', label:'业务矩阵', content: productMatrix },
+  { id:'main-packages', label:'主推套餐', content: mainPackages },
+  { id:'second-opinion', label:'视频二诊', content: secondOpinion },
+  { id:'all-prices', label:'价格速查', content: allPrices },
+  { id:'scripts', label:'销售话术', content: salesScripts },
+  { id:'faq', label:'常见问题', content: faqContent },
+  { id:'objections', label:'异议处理', content: objectionContent },
+  { id:'process', label:'成交流程', content: processContent },
+  { id:'contact', label:'📞 联系方式', content: contactInfo }
+];
+
+// Password
+function checkPassword() {
+  const pw = document.getElementById('passwordInput').value;
+  if (pw === PASSWORD_HASH) {
+    document.getElementById('passwordGate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    init();
+  } else {
+    document.getElementById('passwordError').style.display = 'block';
+  }
+}
+function logout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('passwordGate').style.display = 'flex';
+  document.getElementById('passwordInput').value = '';
+  document.getElementById('passwordError').style.display = 'none';
+}
+
+// Init
+function init() {
+  const sidebar = document.getElementById('sidebar');
+  sidebar.innerHTML = sections.map(s =>
+    `<a href="#" onclick="showSection('${s.id}');return false" data-section="${s.id}">${s.label}</a>`
+  ).join('');
+  showSection('quick');
+  updateClock();
+  setInterval(updateClock, 60000);
+}
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clockDisplay').textContent = now.toLocaleString('zh-CN', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+let currentSection = '';
+
+function showSection(id) {
+  currentSection = id;
+  document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+  document.querySelector(`.sidebar a[data-section="${id}"]`)?.classList.add('active');
+  renderContent(id);
+}
+
+function renderContent(id) {
+  const area = document.getElementById('contentArea');
+  const section = sections.find(s => s.id === id);
+  if (!section) return;
+  area.innerHTML = section.content;
+  // Re-bind collapse toggles
+  area.querySelectorAll('.collapse-toggle').forEach(el => {
+    el.addEventListener('click', () => {
+      el.classList.toggle('open');
+      const target = document.getElementById(el.dataset.target);
+      if (target) target.classList.toggle('open');
+    });
+  });
+}
+
+// Search
+function searchContent() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!q) { renderContent(currentSection || 'quick'); return; }
+  const area = document.getElementById('contentArea');
+  const allText = sections.map(s => ({ id: s.id, text: stripHtml(s.content).toLowerCase() }));
+  const results = allText.filter(s => s.text.includes(q));
+  if (results.length === 0) {
+    area.innerHTML = `<p style="color:#999;text-align:center;padding:40px;">未找到相关内容</p>`;
+    return;
+  }
+  area.innerHTML = `<h3>搜索结果</h3><ul>${results.map(r => `<li style="cursor:pointer;color:var(--primary);" onclick="showSection('${r.id}')">${sections.find(s=>s.id===r.id).label}</li>`).join('')}</ul>`;
+}
+function stripHtml(html) {
+  const d = document.createElement('div'); d.innerHTML = html; return d.textContent || '';
+}
+</script>
+
+<script>
+function quickRef() { return `
+<h3>⚡ 速查手册</h3>
+
+<div class="card-grid">
+  <div class="info-card"><div class="label">主推爆款</div><div class="value">圣路加 套餐A <small>429,000日元</small></div><div style="font-size:12px;color:#999;margin-top:4px;">≈20,000RMB · 1天 · 癌筛全覆盖</div></div>
+  <div class="info-card"><div class="label">入门首选</div><div class="value">辻仲 基础套餐 <small>230,000日元</small></div><div style="font-size:12px;color:#999;margin-top:4px;">≈11,000RMB · 1天 · 全场最低价</div></div>
+  <div class="info-card"><div class="label">品牌之选</div><div class="value">庆应 含胃镜 <small>561,000日元</small></div><div style="font-size:12px;color:#999;margin-top:4px;">≈27,000RMB · 1天 · 大学医院</div></div>
+  <div class="info-card"><div class="label">视频二诊</div><div class="value">远程专家会诊 <small>450,000日元~</small></div><div style="font-size:12px;color:#999;margin-top:4px;">≈21,000RMB · 不出国 · 确诊患者</div></div>
+</div>
+
+<h4 style="margin-top:20px;">📌 推荐匹配原则</h4>
+<table class="agent-table">
+  <tr><th>客户情况</th><th>推荐套餐</th></tr>
+  <tr><td>第一次/预算1万</td><td>辻仲 基础套餐（230,000日元）</td></tr>
+  <tr><td>主流需求/预算2万</td><td><strong>圣路加 套餐A（429,000日元）</strong></td></tr>
+  <tr><td>心脑血管/预算1.5万</td><td>圣路加 套餐C（297,000日元）</td></tr>
+  <tr><td>顶级品牌/预算3万+</td><td>庆应 含胃镜（561,000日元）</td></tr>
+  <tr><td>预算无上限</td><td>藤田 2日套餐（1,100,000~1,309,000日元）</td></tr>
+  <tr><td>已确诊疾病</td><td>视频二诊（450,000日元起）</td></tr>
+</table>
+`; }
+
+function productOverview() { return `
+<h3>我们是谁</h3>
+<p><strong>启航医疗（Qihang Medical）</strong>，与日本威马捷救援株式会社（EAJ）官方合作。EAJ成立于2003年，是日本首家获批的「医疗居留签证担保机构」，服务50+顶级医院。</p>
+
+<div class="highlight">🎯 一句话：<strong>日本顶级医疗资源对接服务商</strong> — 健康人做体检，病人做二诊+治疗。</div>
+
+<h4>两大业务线</h4>
+<table class="agent-table">
+  <tr><th>业务线</th><th>目标人群</th><th>价格区间</th><th>交付方式</th></tr>
+  <tr><td>预防体检</td><td>健康人群</td><td>23~130万日元</td><td>赴日1~2天</td></tr>
+  <tr><td>第二诊疗意见</td><td>已确诊患者</td><td>45~66万日元</td><td>远程视频</td></tr>
+  <tr><td>赴日治疗协调</td><td>需治疗患者</td><td>66~330万日元</td><td>赴日治疗</td></tr>
+</table>
+
+<h4>核心优势</h4>
+<ul>
+  <li>EAJ官方合作 — 日本首家医疗签证担保机构</li>
+  <li>50+顶级医院 — 国立癌症研究中心、东大、庆应、圣路加等</li>
+  <li>全程中文 — 病历翻译+现场陪同+中文报告</li>
+  <li>日本本地团队 — 东京办公室，24小时应急</li>
+</ul>
+`; }
+
+function productMatrix() { return `
+<h3>产品矩阵</h3>
+
+<p>两条业务线并行，覆盖"预防→确诊→治疗"全链条：</p>
+
+<h4>① 预防体检（健康人群）</h4>
+<p>可做广告推广。通过小红书/知乎/朋友圈/SEO获客。客单价1.1~5万RMB，决策周期1~4周。</p>
+
+<h4>② 第二诊疗意见（已确诊患者）</h4>
+<p><strong>不能广告推广</strong>（医疗广告法限制）。通过病友群/体检客户转化/转介绍/SEO获客。客单价2.1万RMB起，决策周期1~3天。</p>
+
+<h4>③ 赴日治疗协调</h4>
+<p>二诊确认需要治疗后自然转化。利润最高（66~330万日元）。</p>
+
+<div class="highlight">💡 最佳路径：体检客户 → 发现异常 → 推荐二诊 → 确诊 → 赴日治疗。<br>每成交一个体检客户，都可能转化成一个二诊+治疗客户。</div>
+
+<h4>获客方式对比</h4>
+<table class="agent-table">
+  <tr><th>渠道</th><th>体检</th><th>二诊</th></tr>
+  <tr><td>社交媒体（小红书/知乎）</td><td>✅ 主渠道</td><td>❌ 不能广告</td></tr>
+  <tr><td>病友群/社区</td><td>—</td><td>✅ 主渠道</td></tr>
+  <tr><td>体检客户转化</td><td>—</td><td>✅ 最佳来源</td></tr>
+  <tr><td>转介绍</td><td>✅</td><td>✅</td></tr>
+  <tr><td>SEO自然搜索</td><td>✅</td><td>✅</td></tr>
+</table>
+`; }
+
+function mainPackages() { return `
+<h3>主推套餐深度解读</h3>
+
+<h4 class="collapse-toggle" data-target="mp1">引流款：辻仲病院 基础套餐 — 230,000日元</h4>
+<div class="collapse-body" id="mp1">
+  <p><strong>客群：</strong>第一次去日本体检、预算1万出头、想试试水。</p>
+  <p><strong>核心：</strong>血液检查+基础检查。CT/MRI/胃镜/肠镜需追加。</p>
+  <div class="highlight">话术："全场最低价1.1万RMB，消化道专科医院擅长做内镜，适合初次体验。"</div>
+</div>
+
+<h4 class="collapse-toggle open" data-target="mp2">🔥 主推爆款：圣路加 套餐A — 429,000日元</h4>
+<div class="collapse-body open" id="mp2">
+  <p><strong>客群：</strong>年收入50万+、要品牌要全面、只有1天时间。</p>
+  <p><strong>包含：</strong>胃镜+CT+肿瘤标志物+骨密度+肺功能+全套血检。可选追加MRI（+89,100日元）。</p>
+  <div class="highlight">话术："圣路加是我们的销售冠军，2万RMB出头，百年JCI认证，癌筛全面。国内2万根本做不到这个级别。"</div>
+</div>
+
+<h4 class="collapse-toggle" data-target="mp3">品牌之选：庆应义塾大学 含胃镜 — 561,000日元</h4>
+<div class="collapse-body" id="mp3">
+  <p><strong>客群：</strong>高净值人群，追求"日本最好大学医院"。</p>
+  <p><strong>包含：</strong>基本套餐+胃镜。不含肿瘤标志物（可追加33,000日元）。</p>
+  <div class="highlight">话术："日本顶级私立大学医院，北里柴三郎创立，安倍晋三等名人都在这看病。"</div>
+</div>
+
+<h4 class="collapse-toggle" data-target="mp4">补充：圣路加 套餐C 头部+心血管 — 297,000日元</h4>
+<div class="collapse-body" id="mp4">
+  <p><strong>客群：</strong>主要关心脑梗/心梗风险，时间紧（半天）。</p>
+  <p><strong>包含：</strong>头部MRI+心脏超声+动脉硬化检测。</p>
+  <div class="highlight">话术："半天做完，专门查心脑血管，价格1.4万。"</div>
+</div>
+`; }
+
+function secondOpinion() { return `
+<h3>第二诊疗意见（视频二诊）</h3>
+
+<p>已确诊患者远程连线日本专家，获取第二诊疗意见。避免误诊、找到最佳治疗方案。</p>
+
+<h4>价格</h4>
+<table class="agent-table">
+  <tr><th>模式</th><th>价格</th><th>说明</th></tr>
+  <tr><td>远程视频咨询</td><td class="price">450,000日元</td><td>视频面诊+口译，无书面报告</td></tr>
+  <tr><td>来院咨询</td><td class="price">450,000~660,000日元</td><td>赴日本面诊+口译</td></tr>
+  <tr><td>书面代理咨询</td><td class="price">450,000~660,000日元</td><td>EAJ代咨询，提供书面报告</td></tr>
+</table>
+
+<div class="highlight">可选追加：病理诊断（国立癌症研究中心） +165,000日元</div>
+
+<h4>客户需要提交的资料</h4>
+<ul>
+  <li>服务申请表 + 个人信息保护同意书</li>
+  <li>护照复印件 + 病历资料（出院小结、手术记录、病理报告、基因检测等）</li>
+  <li>影像DICOM数据（1个月内的PET-CT/CT/MRI）</li>
+</ul>
+
+<h4>流程</h4>
+<p>01 初期咨询 → 02 提交资料 → 03 付费 → 04 病历翻译+预约专家 → 05 视频咨询 → 06 报告反馈</p>
+
+<h4>取消政策</h4>
+<p>预约医院前取消：扣110,000日元。预约后取消：不退。变更日期：110,000日元/次。</p>
+
+<h4>获客渠道</h4>
+<ol>
+  <li><strong>体检客户转化</strong>（最重要）— 报告有异常主动推二诊</li>
+  <li><strong>病友群/社区</strong> — 知乎/小红书搜确诊话题引流</li>
+  <li><strong>转介绍</strong> — 二诊康复客户推荐病友</li>
+  <li><strong>SEO</strong> — "日本第二诊疗意见"等关键词自然搜索</li>
+</ol>
+`; }
+
+function allPrices() { return `
+<h3>全部套餐价格速查</h3>
+
+<h4>圣路加国际医院</h4>
+<table class="agent-table">
+  <tr><th>套餐</th><th>价格</th><th>约RMB</th><th>天数</th></tr>
+  <tr><td>套餐A 基本套餐</td><td class="price">429,000</td><td>≈20,000</td><td>1天</td></tr>
+  <tr><td>套餐B 基本+心血管</td><td class="price">572,000</td><td>≈27,000</td><td>1.5天</td></tr>
+  <tr><td>套餐C 头部+心血管</td><td class="price">297,000</td><td>≈14,000</td><td>0.5天</td></tr>
+  <tr><td>套餐D PET-CT</td><td class="price">330,000</td><td>≈16,000</td><td>0.5天</td></tr>
+  <tr><td style="color:#999;font-size:12px;">MRI任选1项追加</td><td>+89,100</td><td>+4,200</td><td></td></tr>
+  <tr><td style="color:#999;font-size:12px;">下消化道内镜追加</td><td>+132,000</td><td>+6,300</td><td>+1天</td></tr>
+</table>
+
+<h4>庆应义塾大学医院</h4>
+<table class="agent-table">
+  <tr><th>套餐</th><th>价格</th><th>约RMB</th></tr>
+  <tr><td>基础套餐（无胃镜）</td><td class="price">495,000</td><td>≈24,000</td></tr>
+  <tr><td>基础套餐（含胃镜）</td><td class="price">561,000</td><td>≈27,000</td></tr>
+  <tr><td style="color:#999;font-size:12px;">女性检查追加</td><td>+242,000</td><td>+11,500</td></tr>
+  <tr><td style="color:#999;font-size:12px;">心血管检查追加</td><td>+275,000</td><td>+13,000</td></tr>
+</table>
+
+<h4>辻仲病院柏之葉</h4>
+<table class="agent-table">
+  <tr><th>套餐</th><th>价格</th><th>约RMB</th></tr>
+  <tr><td>基础套餐</td><td class="price">230,000</td><td>≈11,000</td></tr>
+  <tr><td>内窥镜套餐</td><td class="price">270,000</td><td>≈13,000</td></tr>
+  <tr><td>男性综合套餐</td><td class="price">570,000</td><td>≈27,000</td></tr>
+  <tr><td>女性综合套餐</td><td class="price">620,000</td><td>≈30,000</td></tr>
+</table>
+
+<h4>藤田医科大学</h4>
+<table class="agent-table">
+  <tr><th>套餐</th><th>价格</th><th>约RMB</th><th>天数</th></tr>
+  <tr><td>1日套餐 男性</td><td class="price">924,000</td><td>≈44,000</td><td>1天</td></tr>
+  <tr><td>1日套餐 女性</td><td class="price">1,144,000</td><td>≈54,000</td><td>1天</td></tr>
+  <tr><td>2日套餐 男性</td><td class="price">1,100,000</td><td>≈52,000</td><td>2天</td></tr>
+  <tr><td>2日套餐 女性</td><td class="price">1,309,000</td><td>≈62,000</td><td>2天</td></tr>
+</table>
+
+<h4>东京科学大学医院</h4>
+<table class="agent-table">
+  <tr><th>套餐</th><th>价格</th><th>约RMB</th></tr>
+  <tr><td>牙科精密检查</td><td class="price">352,000</td><td>≈17,000</td></tr>
+</table>
+
+<h4>视频二诊</h4>
+<table class="agent-table">
+  <tr><th>模式</th><th>价格</th><th>约RMB</th></tr>
+  <tr><td>远程视频咨询</td><td class="price">450,000</td><td>≈21,000</td></tr>
+  <tr><td>来院/书面咨询</td><td class="price">450,000~660,000</td><td>≈21,000~31,000</td></tr>
+</table>
+
+<h4>赴日治疗协调套餐</h4>
+<table class="agent-table">
+  <tr><th>套餐</th><th>价格</th><th>约RMB</th><th>有效期</th></tr>
+  <tr><td>基础套餐</td><td class="price">660,000</td><td>≈31,000</td><td>3个月</td></tr>
+  <tr><td>标准套餐</td><td class="price">1,100,000</td><td>≈52,000</td><td>1年</td></tr>
+  <tr><td>VIP套餐</td><td class="price">3,300,000</td><td>≈157,000</td><td>1年</td></tr>
+</table>
+`; }
+
+function salesScripts() { return `
+<h3>销售话术</h3>
+
+<h4 class="collapse-toggle" data-target="s1">推荐圣路加套餐A</h4>
+<div class="collapse-body" id="s1">
+  <div class="highlight">"圣路加是我们的销售冠军套餐，2万RMB出头，1天搞定。百年历史的国际医院，JCI认证，癌筛项目非常全面——胃镜、CT、肿瘤标志物都含了。而且是圣路加本院医生亲自检查，这个级别在国内花2万根本做不到。"</div>
+</div>
+
+<h4 class="collapse-toggle" data-target="s2">推荐辻仲基础套餐</h4>
+<div class="collapse-body" id="s2">
+  <div class="highlight">"这款套餐是全场最低价，仅1.1万RMB，但医院是日本消化道专科权威，日均内镜80+例。虽然没有CT和MRI，但核心血液检查都很全面，适合初次体验或预算有限的情况。"</div>
+</div>
+
+<h4 class="collapse-toggle" data-target="s3">推荐庆应含胃镜</h4>
+<div class="collapse-body" id="s3">
+  <div class="highlight">"庆应义塾大学是日本最顶级的私立大学，医院院长是日本细菌学之父北里柴三郎。安倍晋三、石原裕次郎都在这里看病。如果您特别看重医院品牌，庆应就是最好的选择。"</div>
+</div>
+
+<h4 class="collapse-toggle" data-target="s4">推荐圣路加套餐C</h4>
+<div class="collapse-body" id="s4">
+  <div class="highlight">"如果您主要担心脑梗、心梗风险，这款最合适。半天就能做完，包含头部MRI、心脏超声、动脉硬化检测，专门针对心脑血管。价格才1.4万。"</div>
+</div>
+
+<h4 class="collapse-toggle" data-target="s5">推荐视频二诊</h4>
+<div class="collapse-body" id="s5">
+  <div class="highlight">"如果您或家人确诊了重大疾病，我建议在决定治疗方案前，先听听日本专家的意见。我们和日本国立癌症研究中心、东京大学医院等50多家顶级医院合作，可以远程视频连线。45万日元，换来的是日本顶级专家团队的判断。万一国内诊断有偏差，或者有更好的治疗方案，这个钱花得太值了。"</div>
+</div>
+
+<h4>客户说"和国内体检有什么区别？"</h4>
+<p>① 发现能力不同：日本可发现2~5mm早期癌，国内通常到1cm以上。② 操作者不同：日本医生亲自做，不是技师。③ 服务不同：限人数预约制，医生详细解读。</p>
+
+<h4>客户说"太贵了"</h4>
+<p>"国内高端体检也要5,000~10,000，但不含胃镜和CT。圣路加2万包含胃镜+CT+肿瘤标志物+全套血检，相当于花一次旅行的钱，做一次可能救命的检查。如果预算有限，辻仲基础套餐1.1万也很划算。"</p>
+
+<h4>客户说"考虑一下"</h4>
+<p>"日本热门医院名额很紧张，尤其是圣路加，通常需要提前1~2个月预约。您确定了尽早告诉我，我帮您先查可预约日期。"</p>
+`; }
+
+function faqContent() { return `
+<h3>常见问题</h3>
+
+<h4 class="collapse-toggle" data-target="f1">需要多少天？怎么安排行程？</h4>
+<div class="collapse-body" id="f1"><p>体检1天。建议3天2晚：第1天到日本，第2天体检，第3天返程。请假3~4天足够。</p></div>
+
+<h4 class="collapse-toggle" data-target="f2">价格包含什么？不包含什么？</h4>
+<div class="collapse-body" id="f2"><p>包含：体检费+翻译费+报告翻译+EMS。不包含：机票+住宿+餐饮（部分含简餐除外）+追加项目。</p></div>
+
+<h4 class="collapse-toggle" data-target="f3">不会日语可以吗？</h4>
+<div class="collapse-body" id="f3"><p>全程中文翻译陪同，问诊到报告全部中文，零语言障碍。</p></div>
+
+<h4 class="collapse-toggle" data-target="f4">取消政策？</h4>
+<div class="collapse-body" id="f4"><p>15~90天前取消收10~30%，2~14天前30~50%，1天前80%，当天100%。迟到1小时=当天取消。确定行程再约。</p></div>
+
+<h4 class="collapse-toggle" data-target="f5">体检报告多久拿到？</h4>
+<div class="collapse-body" id="f5"><p>当天出超声/CT/心电图结果；血液等4~6周出完整报告。日文原版+中文翻译EMS寄送。</p></div>
+
+<h4 class="collapse-toggle" data-target="f6">发现异常怎么办？</h4>
+<div class="collapse-body" id="f6"><p>圣路加可转本院治疗通道。也可协助预约日本专科门诊或第二诊疗意见。</p></div>
+
+<h4 class="collapse-toggle" data-target="f7">体检前一天要到日本？</h4>
+<div class="collapse-body" id="f7"><p>多家医院规定体检前一天必须在日本住宿。当日到达不能体检。体检当天不可乘机回国。</p></div>
+
+<h4 class="collapse-toggle" data-target="f8">小孩可以做吗？</h4>
+<div class="collapse-body" id="f8"><p>主要面向成人（20岁+）。未成年人请咨询顾问。</p></div>
+
+<h4 class="collapse-toggle" data-target="f9">二诊需要什么资料？</h4>
+<div class="collapse-body" id="f9"><p>病历摘要、出院小结、手术记录、病理报告、影像DICOM数据（PET-CT/CT/MRI）。我们翻译后交给日本专家。</p></div>
+`; }
+
+function objectionContent() { return `
+<h3>异议处理话术</h3>
+
+<h4>"太贵了"</h4>
+<p>不要直接说"不贵"，要重构价值：<br>"日本体检的优势在于医生亲自操作、毫米级发现能力。圣路加2万包含胃镜+CT+肿瘤标志物+全套血检，一次旅行的钱，一次可能救命的检查。预算实在有限可以看辻仲1.1万的方案。"</p>
+
+<h4>"国内也能做，为什么要去日本？"</h4>
+<p>"三个区别：发现能力（2mm vs 1cm），操作者（医生 vs 技师），服务（预约限人数 vs 流水线）。如果国内够用就不用去。"</p>
+
+<h4>"从来没去过日本，担心麻烦"</h4>
+<p>"比想象中简单。3小时飞行，全程中文服务。问诊表中文，翻译陪同，报告中文。订好机票酒店人到就行。"</p>
+
+<h4>"考虑一下"</h4>
+<p>"日本热门医院名额紧张，圣路加需提前1~2个月预约。确定尽早说，我查可约日期。"</p>
+
+<h4>"朋友推荐了别家"</h4>
+<p>"我们与日本本土公司官方合作，直接和医院签约，不是多层转手。6家顶级医院包括圣路加和庆应，不是随便能约到的。"</p>
+
+<h4>"远程二诊看得准吗？"</h4>
+<p>"视频前专家已研究过全部病历和影像资料，视频直接给结论。不是普通问诊。"</p>
+`; }
+
+function processContent() { return `
+<h3>成交流程</h3>
+
+<p><strong>标准流程：</strong> 客户咨询 → 需求了解 → 推荐套餐 → 报价 → 客户确认 → 签约付款 → 预约医院 → 出发前指导 → 体检执行 → 报告寄送 → 售后服务</p>
+
+<h4>需求了解（5分钟）</h4>
+<p>问清楚：年龄/性别、关注什么（全身/心脑血管/胃肠/肿瘤）、预算、时间、有无异常。</p>
+
+<h4>推荐匹配</h4>
+<table class="agent-table">
+  <tr><th>情况</th><th>推荐</th></tr>
+  <tr><td>第一次/预算1万</td><td>辻仲基础套餐</td></tr>
+  <tr><td>主流/预算2万</td><td>圣路加套餐A</td></tr>
+  <tr><td>心脑血管/预算1.5万</td><td>圣路加套餐C</td></tr>
+  <tr><td>顶级品牌/预算3万+</td><td>庆应含胃镜</td></tr>
+  <tr><td>预算无上限</td><td>藤田2日套餐</td></tr>
+  <tr><td>已确诊</td><td>视频二诊</td></tr>
+</table>
+
+<h4>报价时告知</h4>
+<ul>
+  <li>套餐价格+估算总费用（机票≈3,000+住宿≈2,000/晚）</li>
+  <li>不包含的项目</li>
+  <li>取消政策</li>
+</ul>
+
+<h4>跟进节奏</h4>
+<ul>
+  <li>当天没成交 → 第3天跟进</li>
+  <li>发送套餐资料+医院介绍</li>
+  <li>制造紧迫感："圣路加下个月档期还剩X个名额"</li>
+</ul>
+`; }
+
+function contactInfo() { return `
+<h3>📞 联系方式</h3>
+
+<div class="card-grid">
+  <div class="info-card"><div class="label">EMAIL</div><div class="value" style="font-size:14px;">qihangmedical@outlook.com</div></div>
+  <div class="info-card"><div class="label">WhatsApp</div><div class="value" style="font-size:14px;">wa.me/8618779374714</div></div>
+  <div class="info-card"><div class="label">微信</div><div class="value" style="font-size:14px;">扫码添加（见官网弹窗）</div></div>
+  <div class="info-card"><div class="label">服务时间</div><div class="value" style="font-size:14px;">周一至周五 9:00-18:00</div></div>
+</div>
+
+<h4 style="margin-top:24px;">⚠️ 销售红线</h4>
+<ul>
+  <li>❌ 不得承诺100%发现癌症</li>
+  <li>❌ 不得保证体检结果正常</li>
+  <li>❌ 不得替代医生诊断建议</li>
+  <li>❌ 不得伪造医院信息</li>
+  <li>❌ 不得承诺不存在折扣</li>
+</ul>
+
+<div class="highlight">💡 最后提醒：客户买的不是体检，是"安心"。我们的价值不是卖套餐，是帮客户守护健康。</div>
+`; }
+</script>
+</body>
+</html>
