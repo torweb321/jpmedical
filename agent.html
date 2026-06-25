@@ -133,20 +133,6 @@ body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
 const PASSWORD_HASH = 'qihang2026'; // 明文密码，后续可改
 // =================
 
-const sections = [
-  { id:'quick', label:'⚡ 速查', content: quickRef },
-  { id:'products', label:'产品总览', content: productOverview },
-  { id:'matrix', label:'业务矩阵', content: productMatrix },
-  { id:'main-packages', label:'主推套餐', content: mainPackages },
-  { id:'second-opinion', label:'视频二诊', content: secondOpinion },
-  { id:'all-prices', label:'价格速查', content: allPrices },
-  { id:'scripts', label:'销售话术', content: salesScripts },
-  { id:'faq', label:'常见问题', content: faqContent },
-  { id:'objections', label:'异议处理', content: objectionContent },
-  { id:'process', label:'成交流程', content: processContent },
-  { id:'contact', label:'📞 联系方式', content: contactInfo }
-];
-
 // Password
 function checkPassword() {
   const pw = document.getElementById('passwordInput').value;
@@ -166,35 +152,45 @@ function logout() {
 }
 
 // Init
-function init() {
-  const sidebar = document.getElementById('sidebar');
-  sidebar.innerHTML = sections.map(s =>
-    `<a href="#" onclick="showSection('${s.id}');return false" data-section="${s.id}">${s.label}</a>`
-  ).join('');
-  showSection('quick');
-  updateClock();
-  setInterval(updateClock, 60000);
-}
 function updateClock() {
   const now = new Date();
   document.getElementById('clockDisplay').textContent = now.toLocaleString('zh-CN', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 }
 
-let currentSection = '';
+/*** 在所有函数定义之后初始化 ***/
+window.addEventListener('DOMContentLoaded', () => {
+  const SECTIONS = [
+    { id:'quick', label:'⚡ 速查', fn: quickRef },
+    { id:'products', label:'产品总览', fn: productOverview },
+    { id:'matrix', label:'业务矩阵', fn: productMatrix },
+    { id:'main-packages', label:'主推套餐', fn: mainPackages },
+    { id:'second-opinion', label:'视频二诊', fn: secondOpinion },
+    { id:'all-prices', label:'价格速查', fn: allPrices },
+    { id:'scripts', label:'销售话术', fn: salesScripts },
+    { id:'faq', label:'常见问题', fn: faqContent },
+    { id:'objections', label:'异议处理', fn: objectionContent },
+    { id:'process', label:'成交流程', fn: processContent },
+    { id:'contact', label:'📞 联系方式', fn: contactInfo }
+  ];
 
-function showSection(id) {
-  currentSection = id;
+  const sidebar = document.getElementById('sidebar');
+  sidebar.innerHTML = SECTIONS.map(s =>
+    `<a href="#" onclick="showSection('${s.id}');return false" data-section="${s.id}">${s.label}</a>`
+  ).join('');
+
+  window.__SECTIONS = SECTIONS;
+  showSection('quick');
+  updateClock();
+  setInterval(updateClock, 60000);
+});
+
+window.showSection = function(id) {
   document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
   document.querySelector(`.sidebar a[data-section="${id}"]`)?.classList.add('active');
-  renderContent(id);
-}
-
-function renderContent(id) {
-  const area = document.getElementById('contentArea');
-  const section = sections.find(s => s.id === id);
+  const section = window.__SECTIONS.find(s => s.id === id);
   if (!section) return;
-  area.innerHTML = section.content;
-  // Re-bind collapse toggles
+  const area = document.getElementById('contentArea');
+  area.innerHTML = typeof section.fn === 'function' ? section.fn() : section.fn;
   area.querySelectorAll('.collapse-toggle').forEach(el => {
     el.addEventListener('click', () => {
       el.classList.toggle('open');
@@ -202,27 +198,23 @@ function renderContent(id) {
       if (target) target.classList.toggle('open');
     });
   });
-}
+};
 
-// Search
-function searchContent() {
+window.searchContent = function() {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
-  if (!q) { renderContent(currentSection || 'quick'); return; }
+  if (!q) { showSection('quick'); return; }
   const area = document.getElementById('contentArea');
-  const allText = sections.map(s => ({ id: s.id, text: stripHtml(s.content).toLowerCase() }));
-  const results = allText.filter(s => s.text.includes(q));
-  if (results.length === 0) {
-    area.innerHTML = `<p style="color:#999;text-align:center;padding:40px;">未找到相关内容</p>`;
+  const found = window.__SECTIONS.filter(s => {
+    const text = (typeof s.fn === 'function' ? stripHtml(s.fn()) : s.fn).toLowerCase();
+    return text.includes(q);
+  });
+  if (found.length === 0) {
+    area.innerHTML = '<p style="color:#999;text-align:center;padding:40px;">未找到相关内容</p>';
     return;
   }
-  area.innerHTML = `<h3>搜索结果</h3><ul>${results.map(r => `<li style="cursor:pointer;color:var(--primary);" onclick="showSection('${r.id}')">${sections.find(s=>s.id===r.id).label}</li>`).join('')}</ul>`;
-}
-function stripHtml(html) {
-  const d = document.createElement('div'); d.innerHTML = html; return d.textContent || '';
-}
-</script>
+  area.innerHTML = `<h3>搜索结果</h3><ul>${found.map(r => `<li style="cursor:pointer;color:var(--primary);" onclick="showSection('${r.id}')">${r.label}</li>`).join('')}</ul>`;
+};
 
-<script>
 function quickRef() { return `
 <h3>⚡ 速查手册</h3>
 
