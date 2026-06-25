@@ -587,6 +587,11 @@ function orderForm() { return `
 <h3>📝 下单确认</h3>
 <p style="font-size:13px;color:#999;margin-bottom:16px;">客户确认意向后，填写此表提交至你的 Telegram。收到后转发给上游（EAJ）下单。</p>
 
+<div id="orderIdDisplay" style="background:var(--bg);border-radius:8px;padding:12px 16px;margin-bottom:16px;max-width:600px;font-size:14px;">
+  <strong>订单号：</strong><span id="orderIdSpan" style="color:var(--primary);font-size:16px;font-weight:700;">生成中...</span>
+  <span style="font-size:12px;color:#999;margin-left:8px;">（唯一识别码，对账用）</span>
+</div>
+
 <form id="orderForm" style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;max-width:600px;">
   <div class="form-group"><label>客户姓名 *</label><input type="text" id="ordName" required style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
   <div class="form-group" style="margin-top:14px;"><label>联系电话 *</label><input type="tel" id="ordPhone" required style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
@@ -619,6 +624,17 @@ function orderForm() { return `
 <div id="orderResult" style="margin-top:12px;font-size:14px;display:none;"></div>
 
 <script>
+function genOrderId() {
+  var d = new Date();
+  var y = d.getFullYear();
+  var m = ('0'+(d.getMonth()+1)).slice(-2);
+  var day = ('0'+d.getDate()).slice(-2);
+  var r = Math.floor(1000 + Math.random()*9000);
+  return 'ORD-'+y+m+day+'-'+r;
+}
+var currentOrderId = genOrderId();
+document.getElementById('orderIdSpan').textContent = currentOrderId;
+
 document.getElementById('orderForm').addEventListener('submit', function(e) {
   e.preventDefault();
   const name = document.getElementById('ordName').value.trim();
@@ -631,14 +647,15 @@ document.getElementById('orderForm').addEventListener('submit', function(e) {
   const date = document.getElementById('ordDate').value;
   const note = document.getElementById('ordNote').value.trim();
 
-  const msg = \`📦 新订单确认
-姓名: \${name}
-电话: \${phone}\${wechat ? '\\n微信: ' + wechat : ''}
-我方套餐: \${ourPkg || '未选'}
-上游原名: \${upstream || '未填'}
-价格: \${price || '未填'}日元
-赴日日期: \${date || '未定'}
-备注: \${note || '无'}\`;
+  const msg = '📦 新订单确认\n' +
+    '订单号: ' + currentOrderId + '\n' +
+    '姓名: ' + name + '\n' +
+    '电话: ' + phone + (wechat ? '\n微信: ' + wechat : '') + '\n' +
+    '我方套餐: ' + (ourPkg || '未选') + '\n' +
+    '上游原名: ' + (upstream || '未填') + '\n' +
+    '价格: ' + (price || '未填') + '日元\n' +
+    '赴日日期: ' + (date || '未定') + '\n' +
+    '备注: ' + (note || '无');
 
   if (TG_BOT_TOKEN) {
     fetch('https://api.telegram.org/bot' + TG_BOT_TOKEN + '/sendMessage', {
@@ -650,8 +667,11 @@ document.getElementById('orderForm').addEventListener('submit', function(e) {
 
   document.getElementById('orderResult').style.display = 'block';
   document.getElementById('orderResult').style.color = 'green';
-  document.getElementById('orderResult').textContent = '✅ 订单已提交至你的Telegram！';
+  document.getElementById('orderResult').textContent = '✅ 订单已提交至你的Telegram！订单号：' + currentOrderId;
   this.reset();
+  // 下次再填生成新订单号
+  currentOrderId = genOrderId();
+  document.getElementById('orderIdSpan').textContent = currentOrderId;
 });
 </script>
 `; }
