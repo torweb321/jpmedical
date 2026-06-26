@@ -218,8 +218,11 @@ window.addEventListener('DOMContentLoaded', () => {
   showSection('quick');
   updateClock();
   setInterval(updateClock, 60000);
-  // Fetch live rate for nav display
+  // Fetch live rate for nav display + dynamic RMB prices
+  window.CURRENT_RATE = 0.042;
   fetch('/api/rate').then(function(r){return r.json();}).then(function(d){
+    window.CURRENT_RATE = d.jpyCny;
+    window.HIST_RATE = d.jpyCny10dAgo || 0.046;
     var r = document.getElementById('navRate');
     if (r) {
       var txt = '1日元=' + d.jpyCny.toFixed(4) + '元';
@@ -228,6 +231,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
       r.textContent = txt;
     }
+    updateDynRMB();
   }).catch(function(){});
 });
 
@@ -297,6 +301,22 @@ function initOrderForm() {
   });
 }
 
+window.updateDynRMB = function() {
+  var rate = window.CURRENT_RATE || 0.042;
+  document.querySelectorAll('.dyn-rmb').forEach(function(el) {
+    var jpy = parseInt(el.getAttribute('data-jpy'));
+    if (!jpy || isNaN(jpy)) return;
+    var cny = Math.round(jpy * rate);
+    var suffix = el.getAttribute('data-suffix') || '';
+    if (cny >= 10000) {
+      var wan = Math.round(cny / 100) / 100;
+      el.textContent = '≈' + (el.getAttribute('data-prefix') || '¥') + wan.toFixed(wan % 1 === 0 ? 0 : 1) + '万' + suffix;
+    } else {
+      el.textContent = '≈' + (el.getAttribute('data-prefix') || '¥') + cny.toLocaleString() + suffix;
+    }
+  });
+};
+
 window.showSection = function(id) {
   document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
   document.querySelector(`.sidebar a[data-section="${id}"]`)?.classList.add('active');
@@ -305,6 +325,7 @@ window.showSection = function(id) {
   const area = document.getElementById('contentArea');
   area.innerHTML = typeof section.fn === 'function' ? section.fn() : section.fn;
   if (id === 'order') { setTimeout(initOrderForm, 50); }
+  setTimeout(updateDynRMB, 10);
   area.querySelectorAll('.collapse-toggle').forEach(el => {
     el.addEventListener('click', () => {
       el.classList.toggle('open');
@@ -333,15 +354,15 @@ function quickRef() { return `
 <h3>⚡ 速查手册</h3>
 
 <div class="card-grid">
-  <div class="info-card"><div class="label">癌症筛查</div><div class="value">癌研有明 标准版 <small>363,000日元</small></div><div style="font-size:12px;color:#999;margin-top:4px;">≈17,000RMB · 1天 · 含CT+胃镜+肿瘤标志物</div>
+  <div class="info-card"><div class="label">癌症筛查</div><div class="value">癌研有明 标准版 <small>363,000日元</small></div><div style="font-size:12px;color:#999;margin-top:4px;"><span class="dyn-rmb" data-jpy="363000"></span> · 1天 · 含CT+胃镜+肿瘤标志物</div>
 <div style="font-size:12px;color:var(--gold);margin-top:2px;">主要担心癌症，想查得专业一点</div></div>
-  <div class="info-card"><div class="label">🔥 主推爆款</div><div class="value">圣路加 标准版 <small>429,000日元</small></div><div style="font-size:12px;color:#999;margin-top:4px;">≈20,000RMB · 1天 · 癌筛全覆盖</div>
+  <div class="info-card"><div class="label">🔥 主推爆款</div><div class="value">圣路加 标准版 <small>429,000日元</small></div><div style="font-size:12px;color:#999;margin-top:4px;"><span class="dyn-rmb" data-jpy="429000"></span> · 1天 · 癌筛全覆盖</div>
 <div style="font-size:12px;color:var(--gold);margin-top:2px;">不想做功课，直接选卖得最好的</div></div>
-  <div class="info-card"><div class="label">入门首选</div><div class="value">辻仲 初筛版 <small>230,000日元</small></div><div style="font-size:12px;color:#999;margin-top:4px;">≈11,000RMB · 1天 · 全场最低价</div>
+  <div class="info-card"><div class="label">入门首选</div><div class="value">辻仲 初筛版 <small>230,000日元</small></div><div style="font-size:12px;color:#999;margin-top:4px;"><span class="dyn-rmb" data-jpy="230000"></span> · 1天 · 全场最低价</div>
 <div style="font-size:12px;color:var(--gold);margin-top:2px;">第一次赴日体检，想花小钱先体验</div></div>
-  <div class="info-card"><div class="label">品牌之选</div><div class="value">庆应 标准版 <small>561,000日元</small></div><div style="font-size:12px;color:#999;margin-top:4px;">≈27,000RMB · 1天 · 大学医院</div>
+  <div class="info-card"><div class="label">品牌之选</div><div class="value">庆应 标准版 <small>561,000日元</small></div><div style="font-size:12px;color:#999;margin-top:4px;"><span class="dyn-rmb" data-jpy="561000"></span> · 1天 · 大学医院</div>
 <div style="font-size:12px;color:var(--gold);margin-top:2px;">看重医院名气和环境体验</div></div>
-  <div class="info-card"><div class="label">视频二诊</div><div class="value">远程专家会诊 <small>450,000日元~</small></div><div style="font-size:12px;color:#999;margin-top:4px;">≈21,000RMB · 不出国 · 确诊患者</div>
+  <div class="info-card"><div class="label">视频二诊</div><div class="value">远程专家会诊 <small>450,000日元~</small></div><div style="font-size:12px;color:#999;margin-top:4px;"><span class="dyn-rmb" data-jpy="450000" data-prefix="¥" data-suffix="起"></span> · 不出国 · 确诊患者</div>
 <div style="font-size:12px;color:var(--gold);margin-top:2px;">国内确诊了，先听听日本专家怎么说</div></div>
 </div>
 
@@ -531,73 +552,73 @@ function allPrices() { return `
 <h4>圣路加国际医院</h4>
 <table class="agent-table">
   <tr><th>套餐</th><th>价格</th><th>约RMB</th><th>天数</th></tr>
-  <tr><td>标准版</td><td class="price">429,000</td><td>≈20,000</td><td>1天</td></tr>
-  <tr><td>心血管加强版</td><td class="price">572,000</td><td>≈27,000</td><td>1.5天</td></tr>
-  <tr><td>脑心速查版</td><td class="price">297,000</td><td>≈14,000</td><td>0.5天</td></tr>
-  <tr><td>PET-CT专项版</td><td class="price">330,000</td><td>≈16,000</td><td>0.5天</td></tr>
-  <tr><td style="color:#999;font-size:12px;">MRI任选1项追加</td><td>+89,100</td><td>+4,200</td><td></td></tr>
-  <tr><td style="color:#999;font-size:12px;">下消化道内镜追加</td><td>+132,000</td><td>+6,300</td><td>+1天</td></tr>
+  <tr><td>标准版</td><td class="price">429,000</td><td><span class="dyn-rmb" data-jpy="429000"></span></td><td>1天</td></tr>
+  <tr><td>心血管加强版</td><td class="price">572,000</td><td><span class="dyn-rmb" data-jpy="572000"></span></td><td>1.5天</td></tr>
+  <tr><td>脑心速查版</td><td class="price">297,000</td><td><span class="dyn-rmb" data-jpy="297000"></span></td><td>0.5天</td></tr>
+  <tr><td>PET-CT专项版</td><td class="price">330,000</td><td><span class="dyn-rmb" data-jpy="330000"></span></td><td>0.5天</td></tr>
+  <tr><td style="color:#999;font-size:12px;">MRI任选1项追加</td><td>+89,100</td><td><span class="dyn-rmb" data-jpy="89100" data-prefix="+¥"></span></td><td></td></tr>
+  <tr><td style="color:#999;font-size:12px;">下消化道内镜追加</td><td>+132,000</td><td><span class="dyn-rmb" data-jpy="132000" data-prefix="+¥"></span></td><td>+1天</td></tr>
 </table>
 
 <h4>庆应义塾大学医院</h4>
 <table class="agent-table">
   <tr><th>套餐</th><th>价格</th><th>约RMB</th></tr>
-  <tr><td>初筛版</td><td class="price">495,000</td><td>≈24,000</td></tr>
-  <tr><td>标准版</td><td class="price">561,000</td><td>≈27,000</td></tr>
-  <tr><td style="color:#999;font-size:12px;">女性检查追加</td><td>+242,000</td><td>+11,500</td></tr>
-  <tr><td style="color:#999;font-size:12px;">心血管检查追加</td><td>+275,000</td><td>+13,000</td></tr>
+  <tr><td>初筛版</td><td class="price">495,000</td><td><span class="dyn-rmb" data-jpy="495000"></span></td></tr>
+  <tr><td>标准版</td><td class="price">561,000</td><td><span class="dyn-rmb" data-jpy="561000"></span></td></tr>
+  <tr><td style="color:#999;font-size:12px;">女性检查追加</td><td>+242,000</td><td><span class="dyn-rmb" data-jpy="242000" data-prefix="+¥"></span></td></tr>
+  <tr><td style="color:#999;font-size:12px;">心血管检查追加</td><td>+275,000</td><td><span class="dyn-rmb" data-jpy="275000" data-prefix="+¥"></span></td></tr>
 </table>
 
 <h4>癌研有明医院（公益财团法人癌研究会）</h4>
 <table class="agent-table">
   <tr><th>套餐</th><th>价格</th><th>约RMB</th><th>天数</th></tr>
-  <tr><td><strong>标准版</strong></td><td class="price"><strong>363,000</strong></td><td><strong>≈17,000</strong></td><td><strong>1天</strong></td></tr>
-  <tr><td>女性标准版</td><td class="price">528,000</td><td>≈25,000</td><td>1天</td></tr>
-  <tr><td>住院深度版（男）</td><td class="price">781,000</td><td>≈37,000</td><td>1.5天</td></tr>
-  <tr><td>住院深度版（女）</td><td class="price">869,000</td><td>≈42,000</td><td>1.5天</td></tr>
-  <tr><td style="color:#999;font-size:12px;">PET-CT追加</td><td>+319,000</td><td>+15,000</td><td>+1天</td></tr>
-  <tr><td style="color:#999;font-size:12px;">头部MRI/MRA追加</td><td>+143,000</td><td>+6,800</td><td></td></tr>
-  <tr><td style="color:#999;font-size:12px;">妇科全套追加</td><td>+66,000</td><td>+3,100</td><td></td></tr>
-  <tr><td style="color:#999;font-size:12px;">乳腺追加</td><td>+44,000</td><td>+2,100</td><td></td></tr>
+  <tr><td><strong>标准版</strong></td><td class="price"><strong>363,000</strong></td><td><strong><span class="dyn-rmb" data-jpy="363000"></span></strong></td><td><strong>1天</strong></td></tr>
+  <tr><td>女性标准版</td><td class="price">528,000</td><td><span class="dyn-rmb" data-jpy="528000"></span></td><td>1天</td></tr>
+  <tr><td>住院深度版（男）</td><td class="price">781,000</td><td><span class="dyn-rmb" data-jpy="781000"></span></td><td>1.5天</td></tr>
+  <tr><td>住院深度版（女）</td><td class="price">869,000</td><td><span class="dyn-rmb" data-jpy="869000"></span></td><td>1.5天</td></tr>
+  <tr><td style="color:#999;font-size:12px;">PET-CT追加</td><td>+319,000</td><td><span class="dyn-rmb" data-jpy="319000" data-prefix="+¥"></span></td><td>+1天</td></tr>
+  <tr><td style="color:#999;font-size:12px;">头部MRI/MRA追加</td><td>+143,000</td><td><span class="dyn-rmb" data-jpy="143000" data-prefix="+¥"></span></td><td></td></tr>
+  <tr><td style="color:#999;font-size:12px;">妇科全套追加</td><td>+66,000</td><td><span class="dyn-rmb" data-jpy="66000" data-prefix="+¥"></span></td><td></td></tr>
+  <tr><td style="color:#999;font-size:12px;">乳腺追加</td><td>+44,000</td><td><span class="dyn-rmb" data-jpy="44000" data-prefix="+¥"></span></td><td></td></tr>
 </table>
 
 <h4>辻仲病院柏之葉</h4>
 <table class="agent-table">
   <tr><th>套餐</th><th>价格</th><th>约RMB</th></tr>
-  <tr><td>初筛版</td><td class="price">230,000</td><td>≈11,000</td></tr>
-  <tr><td>消化道专项</td><td class="price">270,000</td><td>≈13,000</td></tr>
-  <tr><td>标准版</td><td class="price">570,000</td><td>≈27,000</td></tr>
-  <tr><td>标准版</td><td class="price">620,000</td><td>≈30,000</td></tr>
+  <tr><td>初筛版</td><td class="price">230,000</td><td><span class="dyn-rmb" data-jpy="230000"></span></td></tr>
+  <tr><td>消化道专项</td><td class="price">270,000</td><td><span class="dyn-rmb" data-jpy="270000"></span></td></tr>
+  <tr><td>标准版</td><td class="price">570,000</td><td><span class="dyn-rmb" data-jpy="570000"></span></td></tr>
+  <tr><td>标准版</td><td class="price">620,000</td><td><span class="dyn-rmb" data-jpy="620000"></span></td></tr>
 </table>
 
 <h4>藤田医科大学</h4>
 <table class="agent-table">
   <tr><th>套餐</th><th>价格</th><th>约RMB</th><th>天数</th></tr>
-  <tr><td>高端版（1日）男性</td><td class="price">924,000</td><td>≈44,000</td><td>1天</td></tr>
-  <tr><td>高端版（1日）女性</td><td class="price">1,144,000</td><td>≈54,000</td><td>1天</td></tr>
-  <tr><td>深度版（2日）男性</td><td class="price">1,100,000</td><td>≈52,000</td><td>2天</td></tr>
-  <tr><td>深度版（2日）女性</td><td class="price">1,309,000</td><td>≈62,000</td><td>2天</td></tr>
+  <tr><td>高端版（1日）男性</td><td class="price">924,000</td><td><span class="dyn-rmb" data-jpy="924000"></span></td><td>1天</td></tr>
+  <tr><td>高端版（1日）女性</td><td class="price">1,144,000</td><td><span class="dyn-rmb" data-jpy="1144000"></span></td><td>1天</td></tr>
+  <tr><td>深度版（2日）男性</td><td class="price">1,100,000</td><td><span class="dyn-rmb" data-jpy="1100000"></span></td><td>2天</td></tr>
+  <tr><td>深度版（2日）女性</td><td class="price">1,309,000</td><td><span class="dyn-rmb" data-jpy="1309000"></span></td><td>2天</td></tr>
 </table>
 
 <h4>东京科学大学医院</h4>
 <table class="agent-table">
   <tr><th>套餐</th><th>价格</th><th>约RMB</th></tr>
-  <tr><td>牙科专项</td><td class="price">352,000</td><td>≈17,000</td></tr>
+  <tr><td>牙科专项</td><td class="price">352,000</td><td><span class="dyn-rmb" data-jpy="352000"></span></td></tr>
 </table>
 
 <h4>视频二诊</h4>
 <table class="agent-table">
   <tr><th>模式</th><th>价格</th><th>约RMB</th></tr>
-  <tr><td>远程视频咨询</td><td class="price">450,000~660,000</td><td>≈21,000~31,000</td></tr>
-  <tr><td>来院/书面咨询</td><td class="price">450,000~660,000</td><td>≈21,000~31,000</td></tr>
+  <tr><td>远程视频咨询</td><td class="price">450,000~660,000</td><td><span class="dyn-rmb" data-jpy="450000" data-suffix="~"></span><span class="dyn-rmb" data-jpy="660000" data-prefix="" data-suffix=""></span></td></tr>
+  <tr><td>来院/书面咨询</td><td class="price">450,000~660,000</td><td><span class="dyn-rmb" data-jpy="450000" data-suffix="~"></span><span class="dyn-rmb" data-jpy="660000" data-prefix="" data-suffix=""></span></td></tr>
 </table>
 
 <h4>赴日治疗协调套餐</h4>
 <table class="agent-table">
   <tr><th>套餐</th><th>价格</th><th>约RMB</th><th>有效期</th></tr>
-  <tr><td>基础套餐</td><td class="price">660,000</td><td>≈31,000</td><td>3个月</td></tr>
-  <tr><td>标准套餐</td><td class="price">1,100,000</td><td>≈52,000</td><td>1年</td></tr>
-  <tr><td>VIP套餐</td><td class="price">3,300,000</td><td>≈157,000</td><td>1年</td></tr>
+  <tr><td>基础套餐</td><td class="price">660,000</td><td><span class="dyn-rmb" data-jpy="660000"></span></td><td>3个月</td></tr>
+  <tr><td>标准套餐</td><td class="price">1,100,000</td><td><span class="dyn-rmb" data-jpy="1100000"></span></td><td>1年</td></tr>
+  <tr><td>VIP套餐</td><td class="price">3,300,000</td><td><span class="dyn-rmb" data-jpy="3300000"></span></td><td>1年</td></tr>
 </table>
 `; }
 
