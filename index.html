@@ -904,6 +904,7 @@ function fmtCNY(jpy, rate) {
 }
 
 function fmtCNYExact(jpy, rate) {
+  if (rate === undefined) rate = CURRENT_RATE;
   return '¥' + Math.round(jpy * rate).toLocaleString();
 }
 
