@@ -73,9 +73,21 @@ body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
 /* Responsive */
 @media (max-width: 768px) {
   .sidebar { display: none; }
-  .content { padding: 16px; }
+  .content { padding: 16px; max-width: 100%; }
   .card-grid { grid-template-columns: 1fr; }
+  .agent-body { flex-direction: column; }
+  .agent-table { font-size: 12px; }
+  .agent-table th, .agent-table td { padding: 6px 8px; }
+  .hide-mobile { display: none; }
+  .content h3 { font-size: 17px; }
+  .content p, .content li { font-size: 13px; }
+  #searchInput { font-size: 13px; padding: 6px 10px; }
+  .quick-bar { flex-wrap: wrap; }
+  .quick-bar .badge { font-size: 10px; }
+  .mobile-nav { display: block; }
 }
+.mobile-nav { display: none; margin-bottom: 12px; }
+.mobile-nav select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; }
 
 .hidden { display: none; }
 .tab-content { padding-top: 8px; }
@@ -118,10 +130,11 @@ body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
 
   <main class="content" id="mainContent">
     <div class="quick-bar">
-      <input type="text" id="searchInput" placeholder="搜索产品、话术、价格..." oninput="searchContent()">
+      <input type="text" id="searchInput" placeholder="🔍 搜索产品、话术、价格..." oninput="searchContent()">
       <span class="badge gold">📌 圣路加A 429,000日元</span>
       <span class="badge">🏆 主推</span>
     </div>
+    <select id="mobileNav" class="mobile-nav" onchange="showSection(this.value)"><option value="">选择板块...</option></select>
     <div id="contentArea"></div>
   </main>
 </div>
@@ -180,6 +193,11 @@ window.addEventListener('DOMContentLoaded', () => {
   ).join('');
 
   window.__SECTIONS = SECTIONS;
+  // Populate mobile nav
+  var mobNav = document.getElementById('mobileNav');
+  if (mobNav) {
+    mobNav.innerHTML = '<option value="">选择板块...</option>' + SECTIONS.map(function(s){ return '<option value="'+s.id+'">'+s.label.replace(/[🔍⚡📝📞🔥📌]/g,'').trim()+'</option>'; }).join('');
+  }
   showSection('quick');
   updateClock();
   setInterval(updateClock, 60000);
@@ -235,6 +253,7 @@ function initOrderForm() {
     var name = document.getElementById('ordName').value.trim();
     var phone = document.getElementById('ordPhone').value.trim();
     if (!name || !phone) { var r = document.getElementById('orderResult'); r.style.display = 'block'; r.style.color = 'red'; r.textContent = '请填写客户姓名和电话'; return; }
+    var sales = document.getElementById('ordSales').value.trim();
     var wechat = document.getElementById('ordWechat').value.trim();
     var ourPkg = document.getElementById('ordOurPkg').value;
     var upstream = document.getElementById('ordUpstream').value.trim();
@@ -242,7 +261,7 @@ function initOrderForm() {
     var date = document.getElementById('ordDate').value;
     var note = document.getElementById('ordNote').value.trim();
     var oid = document.getElementById('orderIdSpan').textContent;
-    var msg = '📦 新订单确认\n订单号: ' + oid + '\n姓名: ' + name + '\n电话: ' + phone + (wechat ? '\n微信: ' + wechat : '') + '\n我方套餐: ' + (ourPkg || '未选') + '\n上游原名: ' + (upstream || '未填') + '\n价格: ' + (price || '未填') + '日元\n赴日日期: ' + (date || '未定') + '\n备注: ' + (note || '无');
+    var msg = '📦 新订单确认\n订单号: ' + oid + '\n销售: ' + (sales || '未填') + '\n姓名: ' + name + '\n电话: ' + phone + (wechat ? '\n微信: ' + wechat : '') + '\n我方套餐: ' + (ourPkg || '未选') + '\n上游原名: ' + (upstream || '未填') + '\n价格: ' + (price || '未填') + '日元\n赴日日期: ' + (date || '未定') + '\n备注: ' + (note || '无');
     if (TG_BOT_TOKEN) { fetch('https://api.telegram.org/bot' + TG_BOT_TOKEN + '/sendMessage', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg }) }).catch(function(){}); }
     var r2 = document.getElementById('orderResult'); r2.style.display = 'block'; r2.style.color = 'green'; r2.textContent = '✅ 已提交！订单号：' + oid;
     this.reset();
@@ -656,6 +675,7 @@ function orderForm() { return `
 <form id="orderForm" style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;max-width:600px;">
   <div class="form-group"><label>客户姓名 *</label><input type="text" id="ordName" required style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
   <div class="form-group" style="margin-top:14px;"><label>联系电话 *</label><input type="tel" id="ordPhone" required style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
+  <div class="form-group" style="margin-top:14px;"><label>销售姓名 *</label><input type="text" id="ordSales" required placeholder="填你的名字" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
   <div class="form-group" style="margin-top:14px;"><label>微信（选填）</label><input type="text" id="ordWechat" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>
 
   <div class="form-group" style="margin-top:14px;"><label>我方套餐名 *</label>
