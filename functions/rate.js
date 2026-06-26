@@ -1,5 +1,5 @@
-const FALLBACK_RATE = 0.0465;
-const HISTORICAL_BASELINE = 0.050;
+const FALLBACK_RATE = 0.0421;
+const HISTORICAL_BASELINE = 0.0460;
 
 function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
@@ -9,25 +9,33 @@ function daysAgoDate(n) {
   return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 }
 
+async function fetchSinaRate() {
+  var resp = await fetch('https://hq.sinajs.cn/list=fx_sjpycny', {
+    headers: { 'Referer': 'https://finance.sina.com.cn' },
+    cf: { cacheTtl: 600, cacheEverything: true },
+  });
+  if (!resp.ok) throw new Error('Sina API error');
+  var text = await resp.text();
+  var m = text.match(/"([^"]+)"/);
+  if (!m) throw new Error('Sina parse error');
+  var parts = m[1].split(',');
+  var rate = parseFloat(parts[1]);
+  if (isNaN(rate) || rate <= 0) throw new Error('Invalid rate: ' + parts[1]);
+  return rate;
+}
+
 export async function onRequest(context) {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET',
   };
 
-  async function fetchRate(url) {
-    var resp = await fetch(url, { cf: { cacheTtl: 3600, cacheEverything: true } });
-    if (!resp.ok) throw new Error('API error');
-    var data = await resp.json();
-    return data.rates?.CNY;
-  }
-
   try {
     var currentRate, histRate;
 
-    // Current rate from frankfurter (free, no key, supports historical)
+    // Current rate from Sina Finance (matches Chinese bank/WeChat rates)
     try {
-      currentRate = await fetchRate('https://api.frankfurter.app/latest?from=JPY&to=CNY');
+      currentRate = await fetchSinaRate();
     } catch (e) {
       currentRate = null;
     }
@@ -40,13 +48,12 @@ export async function onRequest(context) {
     }
     if (!currentRate) currentRate = FALLBACK_RATE;
 
-    // Historical rate from 10 days ago
+    // Historical rate from 10 days ago (try frankfurter first, then fallback)
     try {
       var histDate = daysAgoDate(10);
-      histRate = await fetchRate('https://api.frankfurter.app/' + histDate + '?from=JPY&to=CNY');
-    } catch (e) {
-      histRate = null;
-    }
+      var hr = await fetch('https://api.frankfurter.app/' + histDate + '?from=JPY&to=CNY', { cf: { cacheTtl: 86400, cacheEverything: true } });
+      if (hr.ok) { var hd = await hr.json(); histRate = hd.rates?.CNY; }
+    } catch (e) {}
     if (!histRate) histRate = HISTORICAL_BASELINE;
 
     return new Response(JSON.stringify({
@@ -57,7 +64,7 @@ export async function onRequest(context) {
     }), {
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=3600',
+        'Cache-Control': 'public, max-age=600',
         ...corsHeaders,
       },
     });

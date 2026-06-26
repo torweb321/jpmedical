@@ -887,8 +887,8 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
 });
 
 // 实时汇率
-var CURRENT_RATE = 0.048;
-var HIST_RATE = 0.050;
+var CURRENT_RATE = 0.042;
+var HIST_RATE = 0.046;
 var RATE_UPDATED = false;
 
 function fmtCNY(jpy, rate) {
@@ -943,7 +943,7 @@ function updatePrices() {
 // Fetch live rate
 fetch('/api/rate').then(function(r) { return r.json(); }).then(function(data) {
   CURRENT_RATE = data.jpyCny;
-  HIST_RATE = data.jpyCny10dAgo || 0.050;
+  HIST_RATE = data.jpyCny10dAgo || 0.046;
   RATE_UPDATED = true;
   updatePrices();
 }).catch(function() {
