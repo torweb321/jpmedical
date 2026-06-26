@@ -893,9 +893,10 @@ var RATE_UPDATED = false;
 
 function fmtCNY(jpy, rate) {
   if (rate === undefined) rate = CURRENT_RATE;
-  var cny = Math.round(jpy * rate / 1000) * 1000;
+  var cny = Math.round(jpy * rate);
   if (cny >= 10000) {
-    return '≈ ¥' + (cny / 10000).toFixed(cny % 10000 === 0 ? 0 : 1) + '万';
+    var wan = Math.round(cny / 100) / 100;
+    return '≈ ¥' + wan.toFixed(wan % 1 === 0 ? 0 : 1) + '万';
   }
   return '≈ ¥' + cny.toLocaleString();
 }
@@ -911,8 +912,8 @@ function updatePrices() {
     if (cnySpan) cnySpan.innerHTML = fmtCNY(jpy);
     var cmp = el.querySelector('.price-compare');
     if (cmp) {
-      var oldCny = Math.round(jpy * HIST_RATE / 1000) * 1000;
-      var newCny = Math.round(jpy * CURRENT_RATE / 1000) * 1000;
+      var oldCny = Math.round(jpy * HIST_RATE);
+      var newCny = Math.round(jpy * CURRENT_RATE);
       var diff = oldCny - newCny;
       if (diff > 0) {
         cmp.textContent = '↘ 10天前' + fmtCNY(jpy, HIST_RATE) + '，省¥' + (diff >= 10000 ? (diff/10000).toFixed(1) + '万' : diff.toLocaleString());
