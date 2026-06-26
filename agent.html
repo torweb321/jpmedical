@@ -221,7 +221,13 @@ window.addEventListener('DOMContentLoaded', () => {
   // Fetch live rate for nav display
   fetch('/api/rate').then(function(r){return r.json();}).then(function(d){
     var r = document.getElementById('navRate');
-    if (r) r.textContent = '1日元=' + d.jpyCny.toFixed(4) + '人民币';
+    if (r) {
+      var txt = '1日元=' + d.jpyCny.toFixed(4) + '元';
+      if (d.jpyCny10dAgo && d.jpyCny < d.jpyCny10dAgo) {
+        txt += ' 📉较10天前省' + Math.round((1 - d.jpyCny/d.jpyCny10dAgo)*100) + '%';
+      }
+      r.textContent = txt;
+    }
   }).catch(function(){});
 });
 
