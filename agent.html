@@ -84,10 +84,16 @@ body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   #searchInput { font-size: 13px; padding: 6px 10px; }
   .quick-bar { flex-wrap: wrap; }
   .quick-bar .badge { font-size: 10px; }
-  .mobile-nav { display: block; }
+  .mob-nav-btn { display: block; }
+  .mob-nav-overlay { display: block; }
 }
-.mobile-nav { display: none; margin-bottom: 12px; }
-.mobile-nav select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; }
+.mob-nav-btn { display: none; position: fixed; bottom: 20px; right: 20px; z-index: 999; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 16px rgba(10,42,92,.3); }
+.mob-nav-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); z-index: 998; }
+.mob-nav-panel { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 16px 16px 0 0; padding: 24px 20px 32px; z-index: 999; max-height: 70vh; overflow-y: auto; transform: translateY(100%); transition: transform .3s; }
+.mob-nav-panel.open { transform: translateY(0); }
+.mob-nav-panel a { display: block; padding: 12px 0; font-size: 15px; color: var(--text); text-decoration: none; border-bottom: 1px solid #eee; }
+.mob-nav-panel a:last-child { border-bottom: none; }
+.mob-nav-panel a.active { color: var(--gold); font-weight: 600; }
 
 .hidden { display: none; }
 .tab-content { padding-top: 8px; }
@@ -138,6 +144,10 @@ body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
     <div id="contentArea"></div>
   </main>
 </div>
+
+<button class="mob-nav-btn" id="mobNavBtn" onclick="toggleMobNav()">☰</button>
+<div class="mob-nav-overlay" id="mobNavOverlay" onclick="toggleMobNav()"></div>
+<div class="mob-nav-panel" id="mobNavPanel"></div>
 
 </div>
 
@@ -193,7 +203,21 @@ window.addEventListener('DOMContentLoaded', () => {
   ).join('');
 
   window.__SECTIONS = SECTIONS;
-  // Populate mobile nav
+  // Mobile nav panel
+  function populateMobNav() {
+    var panel = document.getElementById('mobNavPanel');
+    if (!panel) return;
+    panel.innerHTML = '<div style="text-align:center;font-weight:600;color:var(--primary);padding-bottom:12px;border-bottom:2px solid var(--gold);margin-bottom:8px;">📋 选择板块</div>' +
+      SECTIONS.map(function(s){ return '<a href="#" onclick="event.preventDefault();showSection(\''+s.id+'\');toggleMobNav()">'+s.label+'</a>'; }).join('');
+  }
+  window.toggleMobNav = function() {
+    var panel = document.getElementById('mobNavPanel');
+    var overlay = document.getElementById('mobNavOverlay');
+    var isOpen = panel.classList.toggle('open');
+    overlay.style.display = isOpen ? 'block' : 'none';
+  };
+  populateMobNav();
+  // Populate mobile nav select
   var mobNav = document.getElementById('mobileNav');
   if (mobNav) {
     mobNav.innerHTML = '<option value="">选择板块...</option>' + SECTIONS.map(function(s){ return '<option value="'+s.id+'">'+s.label.replace(/[🔍⚡📝📞🔥📌]/g,'').trim()+'</option>'; }).join('');
