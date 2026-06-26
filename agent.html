@@ -84,11 +84,9 @@ body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   #searchInput { font-size: 13px; padding: 6px 10px; }
   .quick-bar { flex-wrap: wrap; }
   .quick-bar .badge { font-size: 10px; }
-  .mob-nav-btn { display: block; }
-  .mob-nav-overlay { display: block; }
+  #mobNavToggle { display: inline-block !important; }
+  #navRate { display: none; }
 }
-.mob-nav-btn { display: none; position: fixed; bottom: 20px; right: 20px; z-index: 999; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 16px rgba(10,42,92,.3); }
-.mob-nav-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); z-index: 998; }
 .mob-nav-panel { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 16px 16px 0 0; padding: 24px 20px 32px; z-index: 999; max-height: 70vh; overflow-y: auto; transform: translateY(100%); transition: transform .3s; }
 .mob-nav-panel.open { transform: translateY(0); }
 .mob-nav-panel a { display: block; padding: 12px 0; font-size: 15px; color: var(--text); text-decoration: none; border-bottom: 1px solid #eee; }
@@ -125,7 +123,9 @@ body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
     <h2>启航医疗 <span>销售助手</span></h2>
     <div class="nav-right">
       <span id="clockDisplay"></span>
+      <span id="navRate" style="font-size:12px;opacity:.7;"></span>
       <a href="index.html" target="_blank">官网</a>
+      <a href="#" id="mobNavToggle" onclick="event.preventDefault();toggleMobNav()" style="font-size:20px;display:none;" title="导航">☰</a>
       <a href="#" onclick="logout()" style="color:rgba(255,255,255,.5);">退出</a>
     </div>
   </div>
@@ -140,12 +140,10 @@ body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
       <span class="badge gold">📌 圣路加A 429,000日元</span>
       <span class="badge">🏆 主推</span>
     </div>
-    <select id="mobileNav" class="mobile-nav" onchange="showSection(this.value)"><option value="">选择板块...</option></select>
     <div id="contentArea"></div>
   </main>
 </div>
 
-<button class="mob-nav-btn" id="mobNavBtn" onclick="toggleMobNav()">☰</button>
 <div class="mob-nav-overlay" id="mobNavOverlay" onclick="toggleMobNav()"></div>
 <div class="mob-nav-panel" id="mobNavPanel"></div>
 
@@ -217,14 +215,14 @@ window.addEventListener('DOMContentLoaded', () => {
     overlay.style.display = isOpen ? 'block' : 'none';
   };
   populateMobNav();
-  // Populate mobile nav select
-  var mobNav = document.getElementById('mobileNav');
-  if (mobNav) {
-    mobNav.innerHTML = '<option value="">选择板块...</option>' + SECTIONS.map(function(s){ return '<option value="'+s.id+'">'+s.label.replace(/[🔍⚡📝📞🔥📌]/g,'').trim()+'</option>'; }).join('');
-  }
   showSection('quick');
   updateClock();
   setInterval(updateClock, 60000);
+  // Fetch live rate for nav display
+  fetch('/api/rate').then(function(r){return r.json();}).then(function(d){
+    var r = document.getElementById('navRate');
+    if (r) r.textContent = '1日元=' + d.jpyCny.toFixed(4) + '人民币';
+  }).catch(function(){});
 });
 
 // Telegram Bot 配置
